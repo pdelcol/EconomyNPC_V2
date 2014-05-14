@@ -1,0 +1,10 @@
+name: EconomyNPC
+main: com.mongoosecountry.pete800.EconomyNPC
+version: 2.0
+commands:
+    npcspawn:
+      description: Spawns the designated NPC
+      usage: "Usage: /npcspawn"
+    npcremove:
+      description: Removes the designated NPC
+      usage: "Usage: /npcremove"
