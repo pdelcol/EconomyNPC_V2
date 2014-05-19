@@ -5,14 +5,17 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 
-public class EntityStorage {
+public class EntityStorage
+{
 	ArrayList<PlayerNPC> entities = new ArrayList<PlayerNPC>();
 	EconomyNPC plugin;
 	int id = 1000;
+	
 	public EntityStorage(EconomyNPC plugin)
 	{
 		this.plugin = plugin;
 	}
+	
 	public void createEntity(String entityName, UUID playerName)
 	{
 		boolean exists = false;
@@ -26,6 +29,7 @@ public class EntityStorage {
 				plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.RED + "You cannot create an NPC with that name. Try a different name");
 			}
 		}
+		
 		if(!exists)
 		{
 			PlayerNPC npc = new PlayerNPC(entityName, plugin);
@@ -35,6 +39,7 @@ public class EntityStorage {
 			plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
 		}
 	}
+	
 	public void removeEntity(String entityName, UUID playerName)
 	{
 		boolean exists = false;
@@ -55,6 +60,7 @@ public class EntityStorage {
 			entities.remove(removeNum);
 		}
 	}
+	
 	public void resendPackets(UUID playerName)
 	{
 		for(int x = 0; x < entities.size(); x++)
@@ -62,5 +68,4 @@ public class EntityStorage {
 			entities.get(x).resendPacket(plugin.getServer().getPlayer(playerName));
 		}
 	}
-	
 }

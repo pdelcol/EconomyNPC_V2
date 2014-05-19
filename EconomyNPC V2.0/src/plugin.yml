@@ -8,3 +8,4 @@ commands:
     npcremove:
       description: Removes the designated NPC
       usage: "Usage: /npcremove"
+depend: [ProtocolLib]
