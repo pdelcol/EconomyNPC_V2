@@ -16,11 +16,6 @@ public class PlayerListener implements Listener
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		//TODO isn't executing?
-		for (PlayerNPC p : npc.storage.entities)
-		{
-			event.getPlayer().sendMessage("quack");
-			p.resendPacket(event.getPlayer());
-		}
+		npc.storage.resendPackets(event.getPlayer().getUniqueId());
 	}
 }

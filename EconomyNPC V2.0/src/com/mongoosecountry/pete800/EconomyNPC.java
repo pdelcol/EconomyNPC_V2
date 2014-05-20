@@ -1,26 +1,27 @@
 package com.mongoosecountry.pete800;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mongoosecountry.pete800.util.WrapperPlayClientUseEntity;
 import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
 
@@ -37,26 +38,58 @@ public class EconomyNPC extends JavaPlugin
 		storage = new EntityStorage(this);
 		pdf = this.getDescription();
 		
-		File npcFile = new File(getDataFolder(), "NPC.json");
-		if (npcFile.exists())
+		File npcFile = new File(getDataFolder(), "npcs.yml");
+		if (!npcFile.exists())
 		{
-			JSONParser parser = new JSONParser();
 			try
 			{
-				JSONArray npcs = (JSONArray) parser.parse(new FileReader(new File(getDataFolder(), "NPC.json")));
-				for (Object npc : npcs)
-				{
-					getLogger().info(npc.toString());
-					PlayerNPC n = new PlayerNPC(this);
-					n.createNPC((JSONObject) npc);
-				}
+				npcFile.createNewFile();
 			}
-			catch (Exception e)
+			catch (IOException e)
 			{
-				e.printStackTrace();
-				getLogger().severe("Error parsing NPC.json. Please check formatting.");
+				getLogger().severe("Error creating npcs.yml!");
+				getServer().getPluginManager().disablePlugin(this);
 			}
 		}
+		
+		YamlConfiguration npcs = new YamlConfiguration();
+		try
+		{
+			npcs.load(npcFile);
+		}
+		catch (FileNotFoundException e)
+		{
+			getLogger().severe("Error, npcs.yml is missing!");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+		catch (IOException e)
+		{
+			getLogger().severe("Error parsing npcs.yml!");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+		catch (InvalidConfigurationException e)
+		{
+			getLogger().severe("Formatting error in npcs.yml!");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+		
+		
+		if (npcs.getList("npcs") instanceof List)
+		{
+			List<?> npcList = npcs.getList("npcs");
+			for (Object obj : npcList)
+			{
+				if (obj instanceof Map)
+				{
+					PlayerNPC p = new PlayerNPC(this);
+					p.createNPC((Map<?, ?>) obj);
+				}
+			}
+		}
+		
+		getLogger().info(storage.entities.size() + "");
+		for (Player player : getServer().getOnlinePlayers())
+			storage.resendPackets(player.getUniqueId());
 		
 		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Client.USE_ENTITY)
 		{
@@ -70,7 +103,6 @@ public class EconomyNPC extends JavaPlugin
 					for (PlayerNPC npc : storage.entities)
 					{
 						//TODO set up inventory window
-						//TODO debug code
 						if (npc.spawned.getEntityID() == use.getTargetID())
 							player.sendMessage("quack");
 					}
@@ -78,53 +110,37 @@ public class EconomyNPC extends JavaPlugin
 			}
 		});
 		
+		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+		
 		log.info("EconomyNPC is enabled!");
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void onDisable()
 	{
-		JSONArray npcs = new JSONArray();
+		YamlConfiguration npcs = new YamlConfiguration();
+		List<Map<String, Object>> npcList = new ArrayList<Map<String, Object>>();
 		for (PlayerNPC npc : storage.entities)
 		{
 			WrapperPlayServerNamedEntitySpawn entity = npc.spawned;
-			JSONObject n = new JSONObject();
-			n.put("id", entity.getEntityID());
-			n.put("name", entity.getPlayerName());
-			JSONObject location = new JSONObject();
-			location.put("x", entity.getX());
-			location.put("y", entity.getY());
-			location.put("z", entity.getZ());
-			location.put("pitch", entity.getPitch());
-			location.put("yaw", entity.getYaw());
-			n.put("position", location);
-			WrappedDataWatcher watcher = entity.getMetadata();
-			JSONObject meta = new JSONObject();
-			meta.put("flag", watcher.getObject(0));
-			meta.put("drowningcounter", watcher.getObject(1));
-			meta.put("potionbubbles", watcher.getObject(8));
-			n.put("metadata", meta);
-			npcs.add(n);
+			Map<String, Object> values = new HashMap<String, Object>();
+			values.put("id", entity.getEntityID());
+			values.put("x", entity.getPosition().getX());
+			values.put("y", entity.getPosition().getY());
+			values.put("z", entity.getPosition().getZ());
+			values.put("name", ChatColor.stripColor(entity.getPlayerName()));
+			values.put("pitch", entity.getPitch());
+			values.put("yaw", entity.getYaw());
+			npcList.add(values);
 		}
 		
-		File npcFile = new File(getDataFolder(), "NPC.json");
-		File npcBackUp = new File(getDataFolder(), "NPC.json.bak");
-		if (npcFile.exists())
-		{
-			npcFile.renameTo(npcBackUp);
-		}
-		
+		npcs.set("npcs", npcList);
 		try
 		{
-			npcFile.createNewFile();
-			BufferedWriter bw = new BufferedWriter(new FileWriter(npcFile.getAbsoluteFile()));
-			bw.write(npcs.toJSONString());
-			bw.close();
+			npcs.save(new File(getDataFolder(), "npcs.yml"));
 		}
 		catch (IOException e)
 		{
-			getLogger().severe("An error has occurred trying to save NPC.json. Restoring from backup.");
-			npcBackUp.renameTo(npcFile);
+			getLogger().warning("Error saving npcs.yml!");
 		}
 		
 		log.info("EconomyNPC is disabled!");

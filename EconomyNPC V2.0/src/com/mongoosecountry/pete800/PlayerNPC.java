@@ -1,12 +1,12 @@
 package com.mongoosecountry.pete800;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
-import org.json.simple.JSONObject;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
@@ -59,23 +59,23 @@ public class PlayerNPC {
 		}
 	}
 	
-	public void createNPC(JSONObject npc)
+	public void createNPC(Map<?, ?> npcData)
 	{
-		JSONObject loc = (JSONObject) npc.get("position");
 		spawned = new WrapperPlayServerNamedEntitySpawn();
-		spawned.setEntityID(Integer.valueOf(npc.get("id").toString()));
+		spawned.setEntityID(Integer.valueOf(npcData.get("id").toString()));
 		spawned.setPlayerUUID(UUID.randomUUID().toString());
-		spawned.setPlayerName(npc.get("name").toString());
-		spawned.setPosition(new Vector(Double.valueOf(loc.get("x").toString()), Double.valueOf(loc.get("y").toString()), Double.valueOf(loc.get("z").toString())));
-		spawned.setYaw(Float.valueOf(loc.get("yaw").toString()));
-		spawned.setPitch(Float.valueOf(loc.get("pitch").toString()));
+		this.name = npcData.get("name").toString();
+		spawned.setPlayerName(ChatColor.GREEN + name);
+		spawned.setPosition(new Vector(Double.valueOf(npcData.get("x").toString()), Double.valueOf(npcData.get("y").toString()), Double.valueOf(npcData.get("z").toString())));
+		spawned.setYaw(Float.valueOf(npcData.get("yaw").toString()));
+		spawned.setPitch(Float.valueOf(npcData.get("pitch").toString()));
 		
-		JSONObject meta = (JSONObject) npc.get("metadata");
 		WrappedDataWatcher watcher = new WrappedDataWatcher();
-		watcher.setObject(0, Byte.valueOf(meta.get("flag").toString()));
-		watcher.setObject(1, Short.valueOf(meta.get("drowningcounter").toString()));
-		watcher.setObject(8, Byte.valueOf(meta.get("potionbubbles").toString()));
-		spawned.setMetadata(watcher);
+        watcher.setObject(0, (byte) 0); // Flags. Must be a byte.
+        watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
+        watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
+        spawned.setMetadata(watcher);
+        npc.storage.entities.add(this);
 		try
 		{
 			ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
