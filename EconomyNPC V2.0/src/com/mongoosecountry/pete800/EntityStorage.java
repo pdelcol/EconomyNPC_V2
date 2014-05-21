@@ -22,7 +22,7 @@ public class EntityStorage
 		String name = "";
 		for(int x = 0; x < entities.size(); x++)
 		{
-			name = ChatColor.stripColor(entities.get(x).name);
+			name = entities.get(x).name;
 			if(name.equalsIgnoreCase(entityName))
 			{
 				exists = true;

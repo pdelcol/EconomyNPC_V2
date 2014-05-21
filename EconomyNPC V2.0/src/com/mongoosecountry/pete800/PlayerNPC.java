@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
@@ -41,7 +40,7 @@ public class PlayerNPC {
 		spawned.setPosition(player.getLocation().toVector());
 		
 		spawned.setPlayerUUID(UUID.randomUUID().toString());
-		spawned.setPlayerName(ChatColor.GREEN + name); //If you set the name of a npc it renders the skin of the player with that skin!
+		spawned.setPlayerName(name); //If you set the name of a npc it renders the skin of the player with that skin!
 		spawned.setYaw(player.getLocation().getYaw());
 		spawned.setPitch(player.getLocation().getPitch());
 		
@@ -65,7 +64,7 @@ public class PlayerNPC {
 		spawned.setEntityID(Integer.valueOf(npcData.get("id").toString()));
 		spawned.setPlayerUUID(UUID.randomUUID().toString());
 		this.name = npcData.get("name").toString();
-		spawned.setPlayerName(ChatColor.GREEN + name);
+		spawned.setPlayerName(name);
 		spawned.setPosition(new Vector(Double.valueOf(npcData.get("x").toString()), Double.valueOf(npcData.get("y").toString()), Double.valueOf(npcData.get("z").toString())));
 		spawned.setYaw(Float.valueOf(npcData.get("yaw").toString()));
 		spawned.setPitch(Float.valueOf(npcData.get("pitch").toString()));

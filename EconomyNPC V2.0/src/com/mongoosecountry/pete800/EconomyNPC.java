@@ -9,13 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.bukkit.ChatColor;
+import net.milkbowl.vault.economy.Economy;
+
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.comphenix.protocol.PacketType;
@@ -28,15 +31,18 @@ import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
 
 public class EconomyNPC extends JavaPlugin
 {
-	Logger log;
+	Economy econ;
 	EntityStorage storage;
+	Logger log;
 	PluginDescriptionFile pdf;
+	Prices prices;
 	
 	public void onEnable()
 	{
 		log = getLogger();
 		storage = new EntityStorage(this);
-		pdf = this.getDescription();
+		pdf = getDescription();
+		prices = new Prices(this); 
 		
 		File npcFile = new File(getDataFolder(), "npcs.yml");
 		if (!npcFile.exists())
@@ -47,7 +53,7 @@ public class EconomyNPC extends JavaPlugin
 			}
 			catch (IOException e)
 			{
-				getLogger().severe("Error creating npcs.yml!");
+				log.severe("Error creating npcs.yml!");
 				getServer().getPluginManager().disablePlugin(this);
 			}
 		}
@@ -59,17 +65,17 @@ public class EconomyNPC extends JavaPlugin
 		}
 		catch (FileNotFoundException e)
 		{
-			getLogger().severe("Error, npcs.yml is missing!");
+			log.severe("Error, npcs.yml is missing!");
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		catch (IOException e)
 		{
-			getLogger().severe("Error parsing npcs.yml!");
+			log.severe("Error parsing npcs.yml!");
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		catch (InvalidConfigurationException e)
 		{
-			getLogger().severe("Formatting error in npcs.yml!");
+			log.severe("Formatting error in npcs.yml!");
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		
@@ -87,7 +93,12 @@ public class EconomyNPC extends JavaPlugin
 			}
 		}
 		
-		getLogger().info(storage.entities.size() + "");
+		if (!setupEconomy())
+		{
+			log.warning("Vault not detected. Shutting down.");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+		
 		for (Player player : getServer().getOnlinePlayers())
 			storage.resendPackets(player.getUniqueId());
 		
@@ -101,16 +112,14 @@ public class EconomyNPC extends JavaPlugin
 				{
 					WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
 					for (PlayerNPC npc : storage.entities)
-					{
-						//TODO set up inventory window
 						if (npc.spawned.getEntityID() == use.getTargetID())
-							player.sendMessage("quack");
-					}
+							player.openInventory(Bukkit.createInventory(player, 54, npc.spawned.getPlayerName() + "'s Shop"));
 				}
 			}
 		});
 		
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+		getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 		
 		log.info("EconomyNPC is enabled!");
 	}
@@ -127,7 +136,7 @@ public class EconomyNPC extends JavaPlugin
 			values.put("x", entity.getPosition().getX());
 			values.put("y", entity.getPosition().getY());
 			values.put("z", entity.getPosition().getZ());
-			values.put("name", ChatColor.stripColor(entity.getPlayerName()));
+			values.put("name", entity.getPlayerName());
 			values.put("pitch", entity.getPitch());
 			values.put("yaw", entity.getYaw());
 			npcList.add(values);
@@ -140,7 +149,7 @@ public class EconomyNPC extends JavaPlugin
 		}
 		catch (IOException e)
 		{
-			getLogger().warning("Error saving npcs.yml!");
+			log.warning("Error saving npcs.yml!");
 		}
 		
 		log.info("EconomyNPC is disabled!");
@@ -169,5 +178,15 @@ public class EconomyNPC extends JavaPlugin
 		}
 		return false;
 		
+	}
+
+	private boolean setupEconomy()
+	{
+		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+		if (rsp == null)
+			return false;
+
+		econ = rsp.getProvider();
+		return econ != null;
 	}
 }
