@@ -25,22 +25,18 @@ public class PlayerNPC {
 	EconomyNPC npc;
 	WrapperPlayServerNamedEntitySpawn spawned;
 	YamlConfiguration inv = new YamlConfiguration();
-	byte type = 0;
-	//0 = Not Set Up
-	//1 = Essentials
-	//2 = Kit
-	//3 = XP
-	//4 = Blacksmith
+	NPCType type;
 	
 	public PlayerNPC(EconomyNPC npc)
 	{
-		this("", npc);
+		this("", npc, null);
 	}
 	
-	public PlayerNPC(String name, EconomyNPC npc)
+	public PlayerNPC(String name, EconomyNPC npc, NPCType type)
 	{
 		this.name = name;
 		this.npc = npc;
+		this.type = type;
 	}
 	
 	public void createNPC(Player player, int id)
@@ -77,6 +73,7 @@ public class PlayerNPC {
 		spawned.setEntityID(Integer.valueOf(npcData.get("id").toString()));
 		spawned.setPlayerUUID(UUID.randomUUID().toString());
 		this.name = npcData.get("name").toString();
+		this.type = NPCType.fromName(npcData.get("type").toString());
 		spawned.setPlayerName(name);
 		spawned.setPosition(new Vector(Double.valueOf(npcData.get("x").toString()), Double.valueOf(npcData.get("y").toString()), Double.valueOf(npcData.get("z").toString())));
 		spawned.setYaw(Float.valueOf(npcData.get("yaw").toString()));
@@ -135,20 +132,16 @@ public class PlayerNPC {
 		try {
 			ProtocolLibrary.getProtocolManager().sendServerPacket(p, spawned.getHandle());
 		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
 	public Inventory getInventory(Player player)
 	{
-		String invName = name + "'s Shop";
-		if (name.equals("Sell"))
-			invName =  name;
-		
-		Inventory inventory = Bukkit.createInventory(player, 54, invName);
-		for (int slot = 0; slot < inventory.getSize(); slot++)
-			inventory.setItem(slot, inv.getItemStack("" + slot));
+		Inventory inventory = Bukkit.createInventory(player, 54, name + "'s Shop");
+		if (type == NPCType.SHOP)
+			for (int slot = 0; slot < inventory.getSize(); slot++)
+				inventory.setItem(slot, inv.getItemStack("" + slot));
 		
 		return inventory; 
 	}
@@ -167,10 +160,42 @@ public class PlayerNPC {
 		for (int slot = 0; slot < inventory.getSize(); slot++)
 		{
 			ItemStack item = inventory.getItem(slot);
-			ItemMeta meta = item.getItemMeta();
-			meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
-			item.setItemMeta(meta);
-			inv.set(slot + "", inventory.getItem(slot));
+			if (item != null)
+			{
+				ItemMeta meta = item.getItemMeta();
+				meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
+				item.setItemMeta(meta);
+				inv.set(slot + "", inventory.getItem(slot));
+			}
+		}
+	}
+	
+	public static enum NPCType
+	{
+		// Gambling NPC
+		BETTING,
+		// Repair tools/armor
+		BLACKSMITH,
+		// Buy kits
+		KIT,
+		// Standard shop
+		SHOP,
+		// Sell items to the NPC
+		SELL,
+		// Exchange tokens for XP
+		XP;
+		
+		public static NPCType fromName(String name)
+		{
+			for (NPCType type : values())
+			{
+				if (name.toUpperCase().equals(type.toString()))
+				{
+					return type;
+				}
+			}
+			
+			return SHOP;
 		}
 	}
 }

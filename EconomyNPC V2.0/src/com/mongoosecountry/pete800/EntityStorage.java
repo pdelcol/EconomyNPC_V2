@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 
+import com.mongoosecountry.pete800.PlayerNPC.NPCType;
+
 public class EntityStorage
 {
 	ArrayList<PlayerNPC> entities = new ArrayList<PlayerNPC>();
@@ -16,7 +18,7 @@ public class EntityStorage
 		this.plugin = plugin;
 	}
 	
-	public void createEntity(String entityName, UUID playerName)
+	public void createEntity(String entityName, UUID playerName, NPCType type)
 	{
 		boolean exists = false;
 		String name = "";
@@ -32,7 +34,7 @@ public class EntityStorage
 		
 		if(!exists)
 		{
-			PlayerNPC npc = new PlayerNPC(entityName, plugin);
+			PlayerNPC npc = new PlayerNPC(entityName, plugin, type);
 			npc.createNPC(plugin.getServer().getPlayer(playerName), id);
 			entities.add(npc);
 			id++;
@@ -67,5 +69,14 @@ public class EntityStorage
 		{
 			entities.get(x).resendPacket(plugin.getServer().getPlayer(playerName));
 		}
+	}
+	
+	public PlayerNPC getNPC(String name)
+	{
+		for (PlayerNPC npc : entities)
+			if (npc.spawned.getPlayerName().equals(name))
+				return npc;
+		
+		return null;
 	}
 }

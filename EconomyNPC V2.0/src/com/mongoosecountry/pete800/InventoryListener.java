@@ -17,13 +17,15 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.mongoosecountry.pete800.PlayerNPC.NPCType;
+
 public class InventoryListener implements Listener
 {
-	EconomyNPC npc;
+	EconomyNPC plugin;
 	
-	public InventoryListener(EconomyNPC npc)
+	public InventoryListener(EconomyNPC plugin)
 	{
-		this.npc = npc;
+		this.plugin = plugin;
 	}
 	
 	@EventHandler
@@ -34,59 +36,65 @@ public class InventoryListener implements Listener
 		int slot = event.getRawSlot();
 		Inventory shop = event.getView().getTopInventory();
 		
-		for (PlayerNPC n : npc.storage.entities)
+		if (player.getInventory() == shop) return;
+		PlayerNPC npc = null;
+		if (shop.getName().contains("'"))
+			npc = plugin.storage.getNPC(shop.getName().substring(0, shop.getName().indexOf("'")));
+		else if (shop.getName().contains("-"))
+			return;
+		
+		if (npc == null) return;
+		
+		if (npc.type == NPCType.SHOP)
 		{
-			if (shop.getName().equalsIgnoreCase(n.spawned.getPlayerName() + "'s Shop"))
+			if (slot < 27 && slot > -1)
 			{
-				if (slot < 27 && slot > -1)
+				if (event.getAction() == InventoryAction.PICKUP_ALL)
 				{
-					if (event.getAction() == InventoryAction.PICKUP_ALL)
+					OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
+					Material material = clicked.getType();
+					double price = plugin.prices.getPrice(clicked);
+					if (plugin.econ.withdrawPlayer(p, price).transactionSuccess())
 					{
-						OfflinePlayer p = npc.getServer().getOfflinePlayer(player.getUniqueId());
-						Material material = clicked.getType();
-						double price = npc.prices.getPrice(clicked);
-						if (npc.econ.withdrawPlayer(p, price).transactionSuccess())
-						{
-							event.getCursor().setType(Material.AIR);
-							event.getCurrentItem().setType(Material.AIR);
-							event.setCancelled(true);
-							event.setResult(Result.DENY);
-							player.closeInventory();
-							player.getInventory().addItem(new ItemStack(clicked.getType(), clicked.getAmount(), clicked.getDurability()));
-							player.sendMessage("You bought " + material.toString() + " for $" + price + ".");
-						}
-						else
-						{
-							event.getCursor().setType(Material.AIR);
-							event.getCurrentItem().setType(Material.AIR);
-							event.setCancelled(true);
-							event.setResult(Result.DENY);
-							player.closeInventory();
-							player.sendMessage(ChatColor.GOLD + "You don't have enough funds.");
-						}
-					}
-					else
-					{
+						event.getCursor().setType(Material.AIR);
+						event.getCurrentItem().setType(Material.AIR);
 						event.setCancelled(true);
 						event.setResult(Result.DENY);
 						player.closeInventory();
-						player.sendMessage(ChatColor.GOLD + "Invalid click! Please LEFT click on the item you want.");
+						player.getInventory().addItem(new ItemStack(clicked.getType(), clicked.getAmount(), clicked.getDurability()));
+						player.sendMessage("You bought " + material.toString() + " for $" + price + ".");
+					}
+					else
+					{
+						event.getCursor().setType(Material.AIR);
+						event.getCurrentItem().setType(Material.AIR);
+						event.setCancelled(true);
+						event.setResult(Result.DENY);
+						player.closeInventory();
+						player.sendMessage(ChatColor.GOLD + "You don't have enough funds.");
 					}
 				}
 				else
 				{
 					event.setCancelled(true);
 					event.setResult(Result.DENY);
-					// This fixes a packet handling issue that caused the player to disconnect
-					Bukkit.getScheduler().scheduleSyncDelayedTask(npc, new Runnable()
-					{
-						public void run()
-						{
-							player.closeInventory();
-							player.sendMessage(ChatColor.GOLD + "Invalid inventory! Click on the shop's inventory.");
-						}
-					}, 1L);
+					player.closeInventory();
+					player.sendMessage(ChatColor.GOLD + "Invalid click! Please LEFT click on the item you want.");
 				}
+			}
+			else
+			{
+				event.setCancelled(true);
+				event.setResult(Result.DENY);
+				// This fixes a packet handling issue that caused the player to disconnect
+				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable()
+				{
+					public void run()
+					{
+						player.closeInventory();
+						player.sendMessage(ChatColor.GOLD + "Invalid inventory! Click on the shop's inventory.");
+					}
+				}, 1L);
 			}
 		}
 	}
@@ -97,25 +105,32 @@ public class InventoryListener implements Listener
 		Inventory inv = event.getView().getTopInventory();
 		Player player = (Player) event.getPlayer();
 		
-		if (inv.getName().equals("Sell"))
+		PlayerNPC npc = null;
+		if (inv.getName().contains("'s Shop"))
+			npc = plugin.storage.getNPC(inv.getName().substring(0, inv.getName().indexOf("'")));
+		else if (inv.getName().contains(" - Edit"))
+			npc = plugin.storage.getNPC(inv.getName().substring(0, inv.getName().indexOf(" ")));
+		
+		if (npc == null) return;
+		
+		if (npc.type.equals(NPCType.SELL))
 		{
 			List<ItemStack> items = new ArrayList<ItemStack>();
 			double sell = 0;
-			OfflinePlayer p = npc.getServer().getOfflinePlayer(player.getUniqueId());
+			OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
 			for (ItemStack item : inv.getContents())
 			{
 				if (item != null)
 				{
-					if (npc.prices.getPrice(item) > 0)
-						sell += npc.prices.getPrice(item);
+					if (plugin.prices.getPrice(item) > 0)
+						sell += plugin.prices.getPrice(item);
 					else
 						items.add(item);
 				}
 			}
 			
-			npc.econ.depositPlayer(p, sell);
+			plugin.econ.depositPlayer(p, sell);
 			player.sendMessage("You have sold items for a total amount of $" + sell + ".");
-			
 			if (items.size() > 0)
 			{
 				player.sendMessage("Some items could not be sold. They have been returned back to you.");
@@ -123,16 +138,10 @@ public class InventoryListener implements Listener
 					player.getInventory().addItem(item);
 			}
 		}
-		else if (inv.getName().contains(" - Edit") && player.hasPermission("npc.commands"))
+		else if (npc.type.equals(NPCType.SHOP) && inv.getName().contains(" - Edit"))
 		{
-			for (PlayerNPC n : npc.storage.entities)
-			{
-				if (n.name.equals(inv.getName().substring(0, inv.getName().indexOf("-") - 1)))
-				{
-					n.updateInventory(inv);
-					player.sendMessage("Shop updated.");
-				}
-			}
+			npc.updateInventory(inv);
+			player.sendMessage("Shop updated.");
 		}
 	}
 }

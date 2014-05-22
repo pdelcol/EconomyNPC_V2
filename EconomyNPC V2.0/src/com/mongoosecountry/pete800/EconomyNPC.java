@@ -25,6 +25,7 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
+import com.mongoosecountry.pete800.PlayerNPC.NPCType;
 import com.mongoosecountry.pete800.util.WrapperPlayClientUseEntity;
 import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
 
@@ -110,6 +111,7 @@ public class EconomyNPC extends JavaPlugin
 				Player player = event.getPlayer();
 				if (event.getPacketType() == PacketType.Play.Client.USE_ENTITY)
 				{
+					//TODO need to incorporate different situations where a gui is not neccessary
 					WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
 					for (PlayerNPC npc : storage.entities)
 						if (npc.spawned.getEntityID() == use.getTargetID())
@@ -136,6 +138,7 @@ public class EconomyNPC extends JavaPlugin
 			values.put("x", entity.getPosition().getX());
 			values.put("y", entity.getPosition().getY());
 			values.put("z", entity.getPosition().getZ());
+			values.put("type", npc.type.toString());
 			values.put("name", entity.getPlayerName());
 			values.put("pitch", entity.getPitch());
 			values.put("yaw", entity.getYaw());
@@ -164,12 +167,12 @@ public class EconomyNPC extends JavaPlugin
 			return false;
 		}
 		
-		if(cmd.getName().equalsIgnoreCase("npcspawn") && args.length == 1)
+		if(cmd.getName().equalsIgnoreCase("npcspawn") && args.length == 2)
 		{
 			if(sender instanceof Player)
 			{
 				Player player = (Player)sender;
-				storage.createEntity(args[0], player.getUniqueId());
+				storage.createEntity(args[1], player.getUniqueId(), NPCType.fromName(args[0]));
 				return true;
 			}
 		}
@@ -200,7 +203,6 @@ public class EconomyNPC extends JavaPlugin
 			}
 		}
 		return false;
-		
 	}
 
 	private boolean setupEconomy()
