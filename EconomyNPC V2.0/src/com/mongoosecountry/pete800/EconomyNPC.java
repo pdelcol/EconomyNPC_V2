@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 import net.milkbowl.vault.economy.Economy;
 
-import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -113,7 +113,7 @@ public class EconomyNPC extends JavaPlugin
 					WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
 					for (PlayerNPC npc : storage.entities)
 						if (npc.spawned.getEntityID() == use.getTargetID())
-							player.openInventory(Bukkit.createInventory(player, 54, npc.spawned.getPlayerName() + "'s Shop"));
+							player.openInventory(npc.getInventory(player));
 				}
 			}
 		});
@@ -139,6 +139,7 @@ public class EconomyNPC extends JavaPlugin
 			values.put("name", entity.getPlayerName());
 			values.put("pitch", entity.getPitch());
 			values.put("yaw", entity.getYaw());
+			values.put("inventory", npc.inv);
 			npcList.add(values);
 		}
 		
@@ -157,6 +158,12 @@ public class EconomyNPC extends JavaPlugin
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
+		if (!sender.hasPermission("npc.commands"))
+		{
+			sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
+			return false;
+		}
+		
 		if(cmd.getName().equalsIgnoreCase("npcspawn") && args.length == 1)
 		{
 			if(sender instanceof Player)
@@ -174,6 +181,22 @@ public class EconomyNPC extends JavaPlugin
 				Player player = (Player)sender;
 				storage.removeEntity(args[0], player.getUniqueId());
 				return true;
+			}
+		}
+		
+		if (cmd.getName().equalsIgnoreCase("npcedit") && args.length == 1)
+		{
+			if (sender instanceof Player)
+			{
+				Player player = (Player) sender;
+				for (PlayerNPC npc : storage.entities)
+				{
+					if (npc.spawned.getPlayerName().equals(args[0]))
+					{
+						player.openInventory(npc.getInventoryEdit(player));
+						return true;
+					}
+				}
 			}
 		}
 		return false;

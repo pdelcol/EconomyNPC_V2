@@ -1,10 +1,19 @@
 package com.mongoosecountry.pete800;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.ProtocolLibrary;
@@ -15,6 +24,7 @@ public class PlayerNPC {
 	String name;
 	EconomyNPC npc;
 	WrapperPlayServerNamedEntitySpawn spawned;
+	YamlConfiguration inv = new YamlConfiguration();
 	byte type = 0;
 	//0 = Not Set Up
 	//1 = Essentials
@@ -49,10 +59,13 @@ public class PlayerNPC {
         watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
+        ItemStack item = new ItemStack(Material.DIAMOND, 64);
+        ItemMeta meta = item.getItemMeta();
+        meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
+        item.setItemMeta(meta);
+        inv.set("0", item);
 		try {
-			
-				ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
-			
+			ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -75,6 +88,23 @@ public class PlayerNPC {
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
         npc.storage.entities.add(this);
+        if (!name.equalsIgnoreCase("Sell"))
+        {
+        	Map<?, ?> inventory = (Map<?, ?>) npcData.get("inventory");
+        	for (Entry<?, ?> entry : inventory.entrySet())
+            {
+            	if (!(entry.getValue() instanceof MemorySection))
+            	{
+            		int slot = Integer.valueOf(entry.getKey().toString());
+            		ItemStack item = (ItemStack) entry.getValue();
+            		ItemMeta meta = item.getItemMeta();
+            		meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
+            		item.setItemMeta(meta);
+            		inv.set(slot + "", item);
+            	}
+            }
+        }
+        
 		try
 		{
 			ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
@@ -99,6 +129,7 @@ public class PlayerNPC {
 			e.printStackTrace();
 		}
 	}
+	
 	public void resendPacket(Player p)
 	{
 		try {
@@ -109,4 +140,37 @@ public class PlayerNPC {
 		}
 	}
 	
+	public Inventory getInventory(Player player)
+	{
+		String invName = name + "'s Shop";
+		if (name.equals("Sell"))
+			invName =  name;
+		
+		Inventory inventory = Bukkit.createInventory(player, 54, invName);
+		for (int slot = 0; slot < inventory.getSize(); slot++)
+			inventory.setItem(slot, inv.getItemStack("" + slot));
+		
+		return inventory; 
+	}
+	
+	public Inventory getInventoryEdit(Player player)
+	{
+		Inventory inventory = Bukkit.createInventory(player, 54, spawned.getPlayerName() + " - Edit");
+		for (int slot = 0; slot < inventory.getSize(); slot++)
+			inventory.setItem(slot, inv.getItemStack("" + slot));
+		
+		return inventory;
+	}
+	
+	public void updateInventory(Inventory inventory)
+	{
+		for (int slot = 0; slot < inventory.getSize(); slot++)
+		{
+			ItemStack item = inventory.getItem(slot);
+			ItemMeta meta = item.getItemMeta();
+			meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
+			item.setItemMeta(meta);
+			inv.set(slot + "", inventory.getItem(slot));
+		}
+	}
 }

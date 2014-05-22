@@ -8,4 +8,7 @@ commands:
     npcremove:
       description: Removes the designated NPC
       usage: "Usage: /npcremove"
+    npcedit:
+      description: Edit the designated NPC's inventory
+      usage: "Usage: /npcedit"
 depend: [ProtocolLib, Vault]
