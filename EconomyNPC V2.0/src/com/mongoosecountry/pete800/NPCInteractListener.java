@@ -1,0 +1,42 @@
+package com.mongoosecountry.pete800;
+
+import org.bukkit.entity.Player;
+
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+import com.mongoosecountry.pete800.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.util.WrapperPlayClientUseEntity;
+
+public class NPCInteractListener extends PacketAdapter
+{
+	EconomyNPC plugin;
+	
+	public NPCInteractListener(EconomyNPC plugin, PacketType type)
+	{
+		super(plugin, type);
+		this.plugin = plugin;
+	}
+	
+	@Override
+	public void onPacketReceiving(PacketEvent event)
+	{
+		Player player = event.getPlayer();
+		if (event.getPacketType() == PacketType.Play.Client.USE_ENTITY)
+		{
+			WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
+			for (PlayerNPC npc : plugin.storage.entities)
+			{
+				if (npc.spawned.getEntityID() == use.getTargetID())
+				{
+					if(npc.type == NPCType.BLACKSMITH)
+					{
+						npc.handleNonInventoryNPC(player, plugin.econ, (EconomyNPC) plugin);
+					}else{
+						player.openInventory(npc.getInventory(player));
+					}
+				}
+			}
+		}
+	}
+}

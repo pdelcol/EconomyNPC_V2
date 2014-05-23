@@ -23,10 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketEvent;
 import com.mongoosecountry.pete800.PlayerNPC.NPCType;
-import com.mongoosecountry.pete800.util.WrapperPlayClientUseEntity;
 import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
 
 
@@ -104,28 +101,7 @@ public class EconomyNPC extends JavaPlugin
 		for (Player player : getServer().getOnlinePlayers())
 			storage.resendPackets(player.getUniqueId());
 		
-		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Client.USE_ENTITY)
-		{
-			@Override
-			public void onPacketReceiving(PacketEvent event)
-			{
-				Player player = event.getPlayer();
-				if (event.getPacketType() == PacketType.Play.Client.USE_ENTITY)
-				{
-					WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
-					for (PlayerNPC npc : storage.entities)
-						if (npc.spawned.getEntityID() == use.getTargetID())
-						{
-							if(npc.type == NPCType.BLACKSMITH)
-							{
-								npc.handleNonInventoryNPC(player, econ, (EconomyNPC) plugin);
-							}else{
-								player.openInventory(npc.getInventory(player));
-							}
-						}
-				}
-			}
-		});
+		ProtocolLibrary.getProtocolManager().addPacketListener(new NPCInteractListener(this, PacketType.Play.Client.USE_ENTITY));
 		
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 		this.getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
