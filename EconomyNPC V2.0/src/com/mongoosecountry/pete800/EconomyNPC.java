@@ -115,7 +115,7 @@ public class EconomyNPC extends JavaPlugin
 					for (PlayerNPC npc : storage.entities)
 						if (npc.spawned.getEntityID() == use.getTargetID())
 						{
-							if(NPCType.fromName(npc.spawned.getPlayerName()) == NPCType.BLACKSMITH)
+							if(npc.type == NPCType.BLACKSMITH)
 							{
 								npc.handleNonInventoryNPC(player, econ, (EconomyNPC) plugin);
 							}else{
