@@ -47,6 +47,8 @@ public class PlayerNPC {
 		this.name = name;
 		this.npc = npc;
 		this.type = type;
+		if (type.equals(NPCType.BLACKSMITH))
+			blacksmith = new BlacksmithHandler();
 	}
 	
 	public void createNPC(Player player, int id)
@@ -84,6 +86,9 @@ public class PlayerNPC {
 		spawned.setPlayerUUID(UUID.randomUUID().toString());
 		this.name = npcData.get("name").toString();
 		this.type = NPCType.fromName(npcData.get("type").toString());
+		if (type.equals(NPCType.BLACKSMITH))
+			blacksmith = new BlacksmithHandler();
+		
 		spawned.setPlayerName(name);
 		spawned.setPosition(new Vector(Double.valueOf(npcData.get("x").toString()), Double.valueOf(npcData.get("y").toString()), Double.valueOf(npcData.get("z").toString())));
 		spawned.setYaw(Float.valueOf(npcData.get("yaw").toString()));
