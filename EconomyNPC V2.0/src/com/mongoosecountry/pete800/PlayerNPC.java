@@ -2,23 +2,32 @@ package com.mongoosecountry.pete800;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
+import com.mongoosecountry.pete800.util.BlacksmithHandler;
+import com.mongoosecountry.pete800.util.BlacksmithTask;
 
 public class PlayerNPC {
 	String name;
@@ -26,6 +35,7 @@ public class PlayerNPC {
 	WrapperPlayServerNamedEntitySpawn spawned;
 	YamlConfiguration inv = new YamlConfiguration();
 	NPCType type;
+	BlacksmithHandler blacksmith;
 	
 	public PlayerNPC(EconomyNPC npc)
 	{
@@ -166,6 +176,81 @@ public class PlayerNPC {
 				meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
 				item.setItemMeta(meta);
 				inv.set(slot + "", inventory.getItem(slot));
+			}
+		}
+	}
+	
+	public void handleNonInventoryNPC(Player player, Economy econ, EconomyNPC plugin)
+	{
+		if(NPCType.BLACKSMITH == this.type)
+		{
+			int damage = player.getItemInHand().getDurability() - new ItemStack(player.getItemInHand().getType()).getDurability();
+			int costPerDamage = 1;
+			
+			int multiplyer = 0;
+			if(player.getItemInHand().getEnchantments().size() != 0){
+				multiplyer = player.getItemInHand().getEnchantments().size();
+				Set<Enchantment> keyset = player.getItemInHand().getEnchantments().keySet();
+				Iterator<Enchantment> iter = keyset.iterator();
+				for(int q = 0; q < player.getItemInHand().getEnchantments().size(); q++)
+				{
+					if(iter.hasNext())
+						multiplyer += player.getItemInHand().getEnchantments().get(iter.next());
+				}
+			}
+			if(damage > 0)
+			{
+				
+				if(blacksmith.getPlayerName().equalsIgnoreCase("")){
+					double cost = damage * costPerDamage;
+					if(multiplyer > 0){
+						cost = cost * multiplyer;
+					}
+					player.sendMessage(ChatColor.GOLD + "The tool will cost: " + cost + " if you would like to reforge it, right click the blacksmith again");
+					blacksmith.addInfo(cost,player.getName(),player.getItemInHand().getType(),player.getItemInHand().getEnchantments());
+					BukkitTask task = new BlacksmithTask(plugin, blacksmith).runTaskLater(plugin, 100);
+					return;
+				}
+				else if(blacksmith.getPlayerName().equalsIgnoreCase(player.getName()))
+				{
+					if(player.getItemInHand().getType() == blacksmith.getMaterial()){
+						boolean good = true;
+						if(player.getItemInHand().getEnchantments().size() == blacksmith.map.size()){
+							Set<Enchantment> keyset = player.getItemInHand().getEnchantments().keySet();
+							Iterator<Enchantment> iter = keyset.iterator();
+							while(iter.hasNext())
+							{
+								Enchantment enchant = iter.next();
+								if(blacksmith.map.containsKey(enchant))
+								{
+									if(player.getItemInHand().getEnchantmentLevel(enchant) == blacksmith.map.get(enchant))
+									{
+										
+									}else{
+										good = false;
+									}
+								}else{
+									good = false;
+								}
+							}
+						}else{
+							good = false;
+						}
+						if(!good)
+						{
+							player.sendMessage(ChatColor.RED + "Somethings not right with that!");
+							return;
+						}
+						if (econ.withdrawPlayer(player,blacksmith.getCost()).transactionSuccess())
+						{
+							player.getItemInHand().setDurability(new ItemStack(blacksmith.getMaterial()).getDurability());
+							blacksmith = new BlacksmithHandler();
+							return;
+						}else{
+							player.sendMessage(ChatColor.RED + "You do not have enough money for that :(");
+						}
+					}
+				}
 			}
 		}
 	}

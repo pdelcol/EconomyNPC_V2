@@ -111,11 +111,17 @@ public class EconomyNPC extends JavaPlugin
 				Player player = event.getPlayer();
 				if (event.getPacketType() == PacketType.Play.Client.USE_ENTITY)
 				{
-					//TODO need to incorporate different situations where a gui is not neccessary
 					WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
 					for (PlayerNPC npc : storage.entities)
 						if (npc.spawned.getEntityID() == use.getTargetID())
-							player.openInventory(npc.getInventory(player));
+						{
+							if(NPCType.fromName(npc.spawned.getPlayerName()) == NPCType.BLACKSMITH)
+							{
+								npc.handleNonInventoryNPC(player, econ, (EconomyNPC) plugin);
+							}else{
+								player.openInventory(npc.getInventory(player));
+							}
+						}
 				}
 			}
 		});
