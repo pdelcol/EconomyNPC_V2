@@ -208,6 +208,8 @@ public class PlayerNPC {
 					}
 					player.sendMessage(ChatColor.GOLD + "The tool will cost: " + cost + " if you would like to reforge it, right click the blacksmith again");
 					blacksmith.addInfo(cost,player.getName(),player.getItemInHand().getType(),player.getItemInHand().getEnchantments());
+					
+					@SuppressWarnings("unused")
 					BukkitTask task = new BlacksmithTask(plugin, blacksmith).runTaskLater(plugin, 100);
 					return;
 				}

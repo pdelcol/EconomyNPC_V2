@@ -90,6 +90,7 @@ public class EconomyNPC extends JavaPlugin
 				{
 					PlayerNPC p = new PlayerNPC(this);
 					p.createNPC((Map<?, ?>) obj);
+					storage.id++;
 				}
 			}
 		}
@@ -126,8 +127,8 @@ public class EconomyNPC extends JavaPlugin
 			}
 		});
 		
-		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-		getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
+		this.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+		this.getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 		
 		log.info("EconomyNPC is enabled!");
 	}

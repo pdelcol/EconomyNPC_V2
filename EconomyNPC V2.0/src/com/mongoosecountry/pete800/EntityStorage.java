@@ -35,7 +35,7 @@ public class EntityStorage
 		if(!exists)
 		{
 			PlayerNPC npc = new PlayerNPC(entityName, plugin, type);
-			npc.createNPC(plugin.getServer().getPlayer(playerName), id);
+			npc.createNPC(plugin.getServer().getPlayer(playerName).getPlayer(), id);
 			entities.add(npc);
 			id++;
 			plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
