@@ -1,52 +1,86 @@
 package com.mongoosecountry.pete800;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
-public class TokenHandler {
+import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+public class TokenHandler
+{
+	EconomyNPC plugin;
+	File tokenFile;
 	public Map<UUID, Integer> tokens = new HashMap<UUID, Integer>();
-	//Constructor
-	public TokenHandler()
+	YamlConfiguration tokenYml = new YamlConfiguration();
+	
+	public TokenHandler(EconomyNPC plugin)
 	{
-		//We dont need anything here for right now
+		this.plugin = plugin;
 	}
+	
 	//Load the tokens
-	@SuppressWarnings("unchecked")
 	public void load()
 	{
+		tokenFile = new File(plugin.getDataFolder(), "tokens.yml");
+		if (!tokenFile.exists())
+		{
+			try
+			{
+				tokenFile.createNewFile();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream("plugins/EconomyNPC/Token_List.bin"));
-			Object result = ois.readObject();
-			tokens = (Map<UUID, Integer>)result;
-			ois.close();
+			tokenYml.load(tokenFile);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
+		
+		for (Entry<String, Object> entry : tokenYml.getValues(true).entrySet())
+			if (!(entry.getValue() instanceof MemorySection))
+				tokens.put(UUID.fromString(entry.getKey()), Integer.valueOf(entry.getValue().toString()));
 	}
+	
 	//Save the tokens
 	public void save()
 	{
+		if (!tokenFile.exists())
+		{
+			try
+			{
+				tokenFile.createNewFile();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
 		try
 		{
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("plugins/EconomyNPC/Token_List.bin"));
-			oos.writeObject(tokens);
-			oos.flush();
-			oos.close();
-			//Handle I/O exceptions
+			tokenYml.load(tokenFile);
+			for (Entry<UUID, Integer> entry : tokens.entrySet())
+				tokenYml.set(entry.getKey().toString(), entry.getValue());
+			
+			tokenYml.save(tokenFile);
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 	}
+	
 	//Check to see if the player is in the token list
 	public void checkName(UUID player)
 	{
@@ -55,6 +89,7 @@ public class TokenHandler {
 			tokens.put(player, 0);
 		}
 	}
+	
 	//Get the number of tokens for a given player
 	public int getNumTokens(UUID player)
 	{
@@ -64,14 +99,17 @@ public class TokenHandler {
 		}
 		return tokens.get(player);
 	}
+	
 	//Add tokens to a given players account
 	public void addTokens(UUID player, int numTokens)
 	{
 		if(tokens.containsKey(player))
 		{
+			tokens.remove(player);
 			tokens.put(player, tokens.get(player) + numTokens);
 		}
 	}
+	
 	//Remove tokens from a given players account
 	public boolean removeTokens(UUID player, int numTokens)
 	{

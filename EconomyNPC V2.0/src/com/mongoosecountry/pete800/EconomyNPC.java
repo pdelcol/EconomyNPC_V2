@@ -34,13 +34,15 @@ public class EconomyNPC extends JavaPlugin
 	Logger log;
 	PluginDescriptionFile pdf;
 	Prices prices;
+	TokenHandler tokens;
 	
 	public void onEnable()
 	{
 		log = getLogger();
 		storage = new EntityStorage(this);
 		pdf = getDescription();
-		prices = new Prices(this); 
+		prices = new Prices(this);
+		tokens = new TokenHandler(this);
 		
 		File npcFile = new File(getDataFolder(), "npcs.yml");
 		if (!npcFile.exists())

@@ -29,10 +29,12 @@ public class NPCInteractListener extends PacketAdapter
 			{
 				if (npc.spawned.getEntityID() == use.getTargetID())
 				{
-					if(npc.type == NPCType.BLACKSMITH)
+					if(npc.type == NPCType.BLACKSMITH || npc.type == NPCType.XP)
 					{
-						npc.handleNonInventoryNPC(player, plugin.econ, (EconomyNPC) plugin);
-					}else{
+						npc.handleNonInventoryNPC(player, plugin.econ);
+					}
+					else
+					{
 						player.openInventory(npc.getInventory(player));
 					}
 				}

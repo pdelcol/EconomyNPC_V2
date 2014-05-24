@@ -4,8 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
 import net.milkbowl.vault.economy.Economy;
@@ -13,6 +13,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -25,13 +26,13 @@ import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
 import com.mongoosecountry.pete800.util.BlacksmithHandler;
 import com.mongoosecountry.pete800.util.BlacksmithTask;
+import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
 
 public class PlayerNPC {
 	String name;
-	EconomyNPC npc;
+	EconomyNPC plugin;
 	WrapperPlayServerNamedEntitySpawn spawned;
 	YamlConfiguration inv = new YamlConfiguration();
 	NPCType type;
@@ -42,10 +43,10 @@ public class PlayerNPC {
 		this("", npc, null);
 	}
 	
-	public PlayerNPC(String name, EconomyNPC npc, NPCType type)
+	public PlayerNPC(String name, EconomyNPC plugin, NPCType type)
 	{
 		this.name = name;
-		this.npc = npc;
+		this.plugin = plugin;
 		this.type = type;
 		if (type.equals(NPCType.BLACKSMITH))
 			blacksmith = new BlacksmithHandler();
@@ -69,7 +70,7 @@ public class PlayerNPC {
         spawned.setMetadata(watcher);
         ItemStack item = new ItemStack(Material.DIAMOND, 64);
         ItemMeta meta = item.getItemMeta();
-        meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
+        meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
         item.setItemMeta(meta);
         inv.set("0", item);
 		try {
@@ -99,8 +100,8 @@ public class PlayerNPC {
         watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
-        npc.storage.entities.add(this);
-        if (!name.equalsIgnoreCase("Sell"))
+        plugin.storage.entities.add(this);
+        if (this.type != NPCType.SELL)
         {
         	Map<?, ?> inventory = (Map<?, ?>) npcData.get("inventory");
         	for (Entry<?, ?> entry : inventory.entrySet())
@@ -110,7 +111,7 @@ public class PlayerNPC {
             		int slot = Integer.valueOf(entry.getKey().toString());
             		ItemStack item = (ItemStack) entry.getValue();
             		ItemMeta meta = item.getItemMeta();
-            		meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
+            		meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
             		item.setItemMeta(meta);
             		inv.set(slot + "", item);
             	}
@@ -178,14 +179,14 @@ public class PlayerNPC {
 			if (item != null)
 			{
 				ItemMeta meta = item.getItemMeta();
-				meta.setLore(Arrays.asList("$" + npc.prices.getPrice(item)));
+				meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
 				item.setItemMeta(meta);
 				inv.set(slot + "", inventory.getItem(slot));
 			}
 		}
 	}
 	
-	public void handleNonInventoryNPC(Player player, Economy econ, EconomyNPC plugin)
+	public void handleNonInventoryNPC(Player player, Economy econ)
 	{
 		if(NPCType.BLACKSMITH == this.type)
 		{
@@ -260,6 +261,20 @@ public class PlayerNPC {
 				}
 			}
 		}
+		else if (NPCType.XP == this.type)
+		{
+			if (plugin.tokens.removeTokens(player.getUniqueId(), 1))
+			{
+				//Change as necessary for now.
+				double money = 1000.0;
+				OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
+				plugin.econ.depositPlayer(p, money);
+			}
+			else
+			{
+				player.sendMessage(ChatColor.RED + "You do not have enough tokens for that");
+			}
+		}
 	}
 	
 	public static enum NPCType
@@ -274,7 +289,7 @@ public class PlayerNPC {
 		SHOP,
 		// Sell items to the NPC
 		SELL,
-		// Exchange tokens for XP
+		// Exchange tokens for XP/Money
 		XP;
 		
 		public static NPCType fromName(String name)
