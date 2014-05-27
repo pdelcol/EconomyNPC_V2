@@ -130,6 +130,15 @@ public class EconomyNPC extends JavaPlugin
 	
 	public void onDisable()
 	{
+		try
+		{
+			uuid.saveUUIDs();
+		}
+		catch (Exception e)
+		{
+			log.severe("Error saving players.yml");
+		}
+		
 		YamlConfiguration npcs = new YamlConfiguration();
 		List<Map<String, Object>> npcList = new ArrayList<Map<String, Object>>();
 		for (PlayerNPC npc : storage.getEntities())
