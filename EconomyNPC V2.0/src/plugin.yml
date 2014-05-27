@@ -11,4 +11,7 @@ commands:
     npcedit:
       description: Edit the designated NPC's inventory
       usage: "Usage: /npcedit"
+    tokens:
+      description: Give/take tokens from players.
+      usage: "Usage: /tokens"
 depend: [ProtocolLib, Vault]

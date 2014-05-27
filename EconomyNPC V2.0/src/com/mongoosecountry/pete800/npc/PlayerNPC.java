@@ -271,11 +271,10 @@ public class PlayerNPC
 				double money = 1000.0;
 				OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
 				plugin.econ.depositPlayer(p, money);
+				player.sendMessage(ChatColor.GOLD + "You have traded 1 token for $" + money + ".");
 			}
 			else
-			{
 				player.sendMessage(ChatColor.RED + "You do not have enough tokens for that");
-			}
 		}
 	}
 	

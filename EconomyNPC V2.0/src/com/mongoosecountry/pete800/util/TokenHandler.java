@@ -105,11 +105,14 @@ public class TokenHandler
 	//Add tokens to a given players account
 	public void addTokens(UUID player, int numTokens)
 	{
-		if(tokens.containsKey(player))
+		if(containsPlayer(player))
 		{
+			int num = tokens.get(player);
 			tokens.remove(player);
-			tokens.put(player, tokens.get(player) + numTokens);
+			tokens.put(player, num + numTokens);
 		}
+		else
+			tokens.put(player, numTokens);
 	}
 	
 	//Remove tokens from a given players account
@@ -124,5 +127,10 @@ public class TokenHandler
 			return false;
 		}
 		return false;
+	}
+	
+	public boolean containsPlayer(UUID player)
+	{
+		return tokens.containsKey(player);
 	}
 }

@@ -61,6 +61,17 @@ public class EconomyNPC extends JavaPlugin
 			getServer().getPluginManager().disablePlugin(this);
 		}
 		
+		for (Player player : getServer().getOnlinePlayers())
+			if (uuid.getPlayer(player.getName()) == null)
+				uuid.addPlayer(player);
+
+		
+		if (getServer().getPluginManager().getPlugin("TagAPI") == null)
+		{
+			log.severe("TagAPI is not installed!");
+			getServer().getPluginManager().disablePlugin(this);
+		}
+		
 		File npcFile = new File(getDataFolder(), "npcs.yml");
 		if (!npcFile.exists())
 		{
@@ -95,7 +106,6 @@ public class EconomyNPC extends JavaPlugin
 			log.severe("Formatting error in npcs.yml!");
 			getServer().getPluginManager().disablePlugin(this);
 		}
-		
 		
 		if (npcs.getList("npcs") instanceof List)
 		{
@@ -215,28 +225,40 @@ public class EconomyNPC extends JavaPlugin
 		
 		if (cmd.getName().equalsIgnoreCase("tokens"))
 		{
-			if (sender instanceof Player && sender.hasPermission("npc.tokens"))
-			{
-				sender.sendMessage(ChatColor.GOLD + "You have " + tokens.getNumTokens(((Player) sender).getUniqueId()) + " tokens.");
-				return true;
-			}
-			
 			if (args.length == 3)
 			{
 				if (args[0].equalsIgnoreCase("add"))
 				{
-					OfflinePlayer player = uuid.getPlayer(args[1]);
+					OfflinePlayer player = uuid.getOfflinePlayer(args[1]);
+					if (player == null)
+					{
+						sender.sendMessage("Invalid player name.");
+						return false;
+					}
+					
 					tokens.addTokens(player.getUniqueId(), Integer.valueOf(args[2]));
 					sender.sendMessage("Tokens added.");
 					return true;
 				}
 				else if (args[0].equalsIgnoreCase("take"))
 				{
-					OfflinePlayer player = uuid.getPlayer(args[1]);
+					OfflinePlayer player = uuid.getOfflinePlayer(args[1]);
+					if (player == null)
+					{
+						sender.sendMessage("Invalid player name.");
+						return false;
+					}
+					
 					tokens.addTokens(player.getUniqueId(), Integer.valueOf(args[2]));
 					sender.sendMessage("Tokens removed.");
 					return true;
 				}
+			}
+			
+			if (sender instanceof Player && sender.hasPermission("npc.tokens"))
+			{
+				sender.sendMessage(ChatColor.GOLD + "You have " + tokens.getNumTokens(((Player) sender).getUniqueId()) + " tokens.");
+				return true;
 			}
 		}
 		

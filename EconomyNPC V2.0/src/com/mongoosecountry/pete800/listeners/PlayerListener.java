@@ -22,5 +22,7 @@ public class PlayerListener implements Listener
 		Player player = event.getPlayer();
 		plugin.storage.resendPackets(player.getUniqueId());
 		plugin.uuid.addPlayer(player);
+		if (plugin.tokens.containsPlayer(player.getUniqueId()))
+			plugin.tokens.addTokens(player.getUniqueId(), 0);
 	}
 }

@@ -66,9 +66,6 @@ public class UUIDFinder
 
 	public Player getPlayer(String player)
 	{
-		if (!uuids.containsValue(player))
-			return null;
-
 		for (Entry<String, String> entry : uuids.entrySet())
 			if (entry.getValue().equals(player))
 				return Bukkit.getPlayer(UUID.fromString(entry.getKey()));
@@ -78,9 +75,6 @@ public class UUIDFinder
 
 	public OfflinePlayer getOfflinePlayer(String player)
 	{
-		if (!uuids.containsValue(player))
-			return null;
-
 		for (Entry<String, String> entry : uuids.entrySet())
 			if (entry.getValue().equals(player))
 				return Bukkit.getOfflinePlayer(UUID.fromString(entry.getKey()));
