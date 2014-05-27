@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -35,6 +36,7 @@ public class EconomyNPC extends JavaPlugin
 	PluginDescriptionFile pdf;
 	Prices prices;
 	TokenHandler tokens;
+	UUIDFinder uuid;
 	
 	public void onEnable()
 	{
@@ -43,6 +45,16 @@ public class EconomyNPC extends JavaPlugin
 		pdf = getDescription();
 		prices = new Prices(this);
 		tokens = new TokenHandler(this);
+		
+		try
+		{
+			uuid = new UUIDFinder(this);
+		}
+		catch (Exception e)
+		{
+			log.severe("Error with players.yml!");
+			getServer().getPluginManager().disablePlugin(this);
+		}
 		
 		File npcFile = new File(getDataFolder(), "npcs.yml");
 		if (!npcFile.exists())
@@ -105,8 +117,8 @@ public class EconomyNPC extends JavaPlugin
 		
 		ProtocolLibrary.getProtocolManager().addPacketListener(new NPCInteractListener(this, PacketType.Play.Client.USE_ENTITY));
 		
-		this.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-		this.getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
+		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+		getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 		
 		log.info("EconomyNPC is enabled!");
 	}
@@ -187,6 +199,34 @@ public class EconomyNPC extends JavaPlugin
 				}
 			}
 		}
+		
+		if (cmd.getName().equalsIgnoreCase("tokens"))
+		{
+			if (sender instanceof Player && sender.hasPermission("npc.tokens"))
+			{
+				sender.sendMessage(ChatColor.GOLD + "You have " + tokens.getNumTokens(((Player) sender).getUniqueId()) + " tokens.");
+				return true;
+			}
+			
+			if (args.length == 3)
+			{
+				if (args[0].equalsIgnoreCase("add"))
+				{
+					OfflinePlayer player = uuid.getPlayer(args[1]);
+					tokens.addTokens(player.getUniqueId(), Integer.valueOf(args[2]));
+					sender.sendMessage("Tokens added.");
+					return true;
+				}
+				else if (args[0].equalsIgnoreCase("take"))
+				{
+					OfflinePlayer player = uuid.getPlayer(args[1]);
+					tokens.addTokens(player.getUniqueId(), Integer.valueOf(args[2]));
+					sender.sendMessage("Tokens removed.");
+					return true;
+				}
+			}
+		}
+		
 		return false;
 	}
 
