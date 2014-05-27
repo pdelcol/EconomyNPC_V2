@@ -89,7 +89,7 @@ public class PlayerNPC
 		spawned.setPlayerUUID(UUID.randomUUID().toString());
 		this.name = npcData.get("name").toString();
 		this.type = NPCType.fromName(npcData.get("type").toString());
-		if (type.equals(NPCType.BLACKSMITH))
+		if (type == NPCType.BLACKSMITH)
 			blacksmith = new BlacksmithHandler();
 		
 		spawned.setPlayerName(name);

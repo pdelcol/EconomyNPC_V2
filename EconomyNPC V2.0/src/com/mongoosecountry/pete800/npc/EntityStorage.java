@@ -37,6 +37,10 @@ public class EntityStorage
 		if(!exists)
 		{
 			PlayerNPC npc = new PlayerNPC(entityName, plugin, type);
+			for (PlayerNPC n : entities)
+				if (id == n.getEntityData().getEntityID())
+					id++;
+			
 			npc.createNPC(plugin.getServer().getPlayer(playerName).getPlayer(), id);
 			entities.add(npc);
 			id++;
@@ -85,10 +89,5 @@ public class EntityStorage
 	public List<PlayerNPC> getEntities()
 	{
 		return entities;
-	}
-	
-	public void increaseId()
-	{
-		id++;
 	}
 }

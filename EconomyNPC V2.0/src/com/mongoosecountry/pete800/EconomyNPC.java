@@ -106,7 +106,6 @@ public class EconomyNPC extends JavaPlugin
 				{
 					PlayerNPC p = new PlayerNPC(this);
 					p.createNPC((Map<?, ?>) obj);
-					storage.increaseId();
 				}
 			}
 		}
