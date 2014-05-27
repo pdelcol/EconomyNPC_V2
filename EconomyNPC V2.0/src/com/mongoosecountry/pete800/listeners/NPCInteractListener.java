@@ -1,12 +1,14 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.listeners;
 
 import org.bukkit.entity.Player;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
-import com.mongoosecountry.pete800.PlayerNPC.NPCType;
-import com.mongoosecountry.pete800.util.WrapperPlayClientUseEntity;
+import com.mongoosecountry.pete800.EconomyNPC;
+import com.mongoosecountry.pete800.npc.PlayerNPC;
+import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.util.packet.WrapperPlayClientUseEntity;
 
 public class NPCInteractListener extends PacketAdapter
 {
@@ -25,11 +27,11 @@ public class NPCInteractListener extends PacketAdapter
 		if (event.getPacketType() == PacketType.Play.Client.USE_ENTITY)
 		{
 			WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
-			for (PlayerNPC npc : plugin.storage.entities)
+			for (PlayerNPC npc : plugin.storage.getEntities())
 			{
-				if (npc.spawned.getEntityID() == use.getTargetID())
+				if (npc.getEntityData().getEntityID() == use.getTargetID())
 				{
-					if(npc.type == NPCType.BLACKSMITH || npc.type == NPCType.XP)
+					if(npc.getType() == NPCType.BLACKSMITH || npc.getType() == NPCType.XP)
 					{
 						npc.handleNonInventoryNPC(player, plugin.econ);
 					}

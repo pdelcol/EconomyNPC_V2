@@ -1,9 +1,11 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.listeners;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+
+import com.mongoosecountry.pete800.EconomyNPC;
 
 public class PlayerListener implements Listener
 {

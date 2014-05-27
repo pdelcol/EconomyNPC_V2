@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.util;
+package com.mongoosecountry.pete800.util.blacksmith;
 
 
 import java.util.Map;
@@ -19,18 +19,21 @@ public class BlacksmithHandler extends BukkitRunnable{
 		this.material = material;
 		this.map = map;
 	}
+	
 	public BlacksmithHandler()
 	{
 		cost = 0.0;
 		playerName = "";
 		material = Material.AIR;
 	}
+	
 	public void removeInfo()
 	{
 		cost = 0.0;
 		playerName = "";
 		material = Material.AIR;
 	}
+	
 	public void addInfo(double cost, String playerName,Material material, Map<Enchantment, Integer> map)
 	{
 		this.cost = cost;
@@ -38,18 +41,22 @@ public class BlacksmithHandler extends BukkitRunnable{
 		this.material = material;
 		this.map = map;
 	}
+	
 	public double getCost()
 	{
 		return cost;
 	}
+	
 	public String getPlayerName()
 	{
 		return playerName;
 	}
+	
 	public Material getMaterial()
 	{
 		return material;
 	}
+	
 	@Override
 	public void run() {
 		new BlacksmithHandler();

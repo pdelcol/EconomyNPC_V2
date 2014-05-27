@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.npc;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -26,11 +26,13 @@ import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import com.mongoosecountry.pete800.util.BlacksmithHandler;
-import com.mongoosecountry.pete800.util.BlacksmithTask;
-import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
+import com.mongoosecountry.pete800.EconomyNPC;
+import com.mongoosecountry.pete800.util.blacksmith.BlacksmithHandler;
+import com.mongoosecountry.pete800.util.blacksmith.BlacksmithTask;
+import com.mongoosecountry.pete800.util.packet.WrapperPlayServerNamedEntitySpawn;
 
-public class PlayerNPC {
+public class PlayerNPC
+{
 	String name;
 	EconomyNPC plugin;
 	WrapperPlayServerNamedEntitySpawn spawned;
@@ -275,6 +277,21 @@ public class PlayerNPC {
 				player.sendMessage(ChatColor.RED + "You do not have enough tokens for that");
 			}
 		}
+	}
+	
+	public NPCType getType()
+	{
+		return type;
+	}
+	
+	public WrapperPlayServerNamedEntitySpawn getEntityData()
+	{
+		return spawned;
+	}
+	
+	public YamlConfiguration getInventory()
+	{
+		return inv;
 	}
 	
 	public static enum NPCType

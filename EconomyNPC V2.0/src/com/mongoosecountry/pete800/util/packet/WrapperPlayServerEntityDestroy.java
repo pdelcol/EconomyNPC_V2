@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.util;
+package com.mongoosecountry.pete800.util.packet;
 
 /*
  *  PacketWrapper - Contains wrappers for each packet in Minecraft.

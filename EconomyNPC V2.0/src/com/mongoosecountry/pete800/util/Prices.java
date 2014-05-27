@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,6 +12,8 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+
+import com.mongoosecountry.pete800.EconomyNPC;
 
 public class Prices
 {

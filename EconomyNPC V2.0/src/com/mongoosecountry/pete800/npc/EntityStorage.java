@@ -1,11 +1,13 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.npc;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 
-import com.mongoosecountry.pete800.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.EconomyNPC;
+import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
 
 public class EntityStorage
 {
@@ -78,5 +80,15 @@ public class EntityStorage
 				return npc;
 		
 		return null;
+	}
+	
+	public List<PlayerNPC> getEntities()
+	{
+		return entities;
+	}
+	
+	public void increaseId()
+	{
+		id++;
 	}
 }

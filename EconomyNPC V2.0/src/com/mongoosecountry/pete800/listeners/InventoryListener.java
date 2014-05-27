@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.listeners;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.mongoosecountry.pete800.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.EconomyNPC;
+import com.mongoosecountry.pete800.npc.PlayerNPC;
+import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
 
 public class InventoryListener implements Listener
 {
@@ -45,7 +47,7 @@ public class InventoryListener implements Listener
 		
 		if (npc == null) return;
 		
-		if (npc.type == NPCType.SHOP)
+		if (npc.getType() == NPCType.SHOP)
 		{
 			if (slot < 27 && slot > -1)
 			{
@@ -113,7 +115,7 @@ public class InventoryListener implements Listener
 		
 		if (npc == null) return;
 		
-		if (npc.type.equals(NPCType.SELL))
+		if (npc.getType() == NPCType.SELL)
 		{
 			List<ItemStack> items = new ArrayList<ItemStack>();
 			double sell = 0;
@@ -138,7 +140,7 @@ public class InventoryListener implements Listener
 					player.getInventory().addItem(item);
 			}
 		}
-		else if (npc.type.equals(NPCType.SHOP) && inv.getName().contains(" - Edit"))
+		else if (npc.getType() == NPCType.SHOP && inv.getName().contains(" - Edit"))
 		{
 			npc.updateInventory(inv);
 			player.sendMessage("Shop updated.");

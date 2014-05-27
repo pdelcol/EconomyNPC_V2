@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.util;
+package com.mongoosecountry.pete800.util.blacksmith;
 
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;

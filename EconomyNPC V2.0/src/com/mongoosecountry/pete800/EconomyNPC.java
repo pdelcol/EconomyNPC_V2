@@ -18,31 +18,36 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.mongoosecountry.pete800.PlayerNPC.NPCType;
-import com.mongoosecountry.pete800.util.WrapperPlayServerNamedEntitySpawn;
+import com.mongoosecountry.pete800.listeners.InventoryListener;
+import com.mongoosecountry.pete800.listeners.NPCInteractListener;
+import com.mongoosecountry.pete800.listeners.PlayerListener;
+import com.mongoosecountry.pete800.npc.EntityStorage;
+import com.mongoosecountry.pete800.npc.PlayerNPC;
+import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.util.Prices;
+import com.mongoosecountry.pete800.util.TokenHandler;
+import com.mongoosecountry.pete800.util.UUIDFinder;
+import com.mongoosecountry.pete800.util.packet.WrapperPlayServerNamedEntitySpawn;
 
 
 public class EconomyNPC extends JavaPlugin
 {
-	Economy econ;
-	EntityStorage storage;
-	Logger log;
-	PluginDescriptionFile pdf;
-	Prices prices;
-	TokenHandler tokens;
-	UUIDFinder uuid;
+	public Economy econ;
+	public EntityStorage storage;
+	public Logger log;
+	public Prices prices;
+	public TokenHandler tokens;
+	public UUIDFinder uuid;
 	
 	public void onEnable()
 	{
 		log = getLogger();
 		storage = new EntityStorage(this);
-		pdf = getDescription();
 		prices = new Prices(this);
 		tokens = new TokenHandler(this);
 		
@@ -101,7 +106,7 @@ public class EconomyNPC extends JavaPlugin
 				{
 					PlayerNPC p = new PlayerNPC(this);
 					p.createNPC((Map<?, ?>) obj);
-					storage.id++;
+					storage.increaseId();
 				}
 			}
 		}
@@ -127,19 +132,19 @@ public class EconomyNPC extends JavaPlugin
 	{
 		YamlConfiguration npcs = new YamlConfiguration();
 		List<Map<String, Object>> npcList = new ArrayList<Map<String, Object>>();
-		for (PlayerNPC npc : storage.entities)
+		for (PlayerNPC npc : storage.getEntities())
 		{
-			WrapperPlayServerNamedEntitySpawn entity = npc.spawned;
+			WrapperPlayServerNamedEntitySpawn entity = npc.getEntityData();
 			Map<String, Object> values = new HashMap<String, Object>();
 			values.put("id", entity.getEntityID());
 			values.put("x", entity.getPosition().getX());
 			values.put("y", entity.getPosition().getY());
 			values.put("z", entity.getPosition().getZ());
-			values.put("type", npc.type.toString());
+			values.put("type", npc.getType().toString());
 			values.put("name", entity.getPlayerName());
 			values.put("pitch", entity.getPitch());
 			values.put("yaw", entity.getYaw());
-			values.put("inventory", npc.inv);
+			values.put("inventory", npc.getInventory());
 			npcList.add(values);
 		}
 		
@@ -189,9 +194,9 @@ public class EconomyNPC extends JavaPlugin
 			if (sender instanceof Player)
 			{
 				Player player = (Player) sender;
-				for (PlayerNPC npc : storage.entities)
+				for (PlayerNPC npc : storage.getEntities())
 				{
-					if (npc.spawned.getPlayerName().equals(args[0]))
+					if (npc.getEntityData().getPlayerName().equals(args[0]))
 					{
 						player.openInventory(npc.getInventoryEdit(player));
 						return true;

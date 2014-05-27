@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.util;
 
 import java.io.BufferedWriter;
 import java.io.File;

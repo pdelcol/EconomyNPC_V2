@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800;
+package com.mongoosecountry.pete800.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,8 @@ import java.util.UUID;
 
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import com.mongoosecountry.pete800.EconomyNPC;
 
 public class TokenHandler
 {
