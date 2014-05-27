@@ -50,7 +50,7 @@ public class PlayerNPC
 		this.name = name;
 		this.plugin = plugin;
 		this.type = type;
-		if (type.equals(NPCType.BLACKSMITH))
+		if (this.type == NPCType.BLACKSMITH)
 			blacksmith = new BlacksmithHandler();
 	}
 	
