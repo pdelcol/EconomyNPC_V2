@@ -318,7 +318,7 @@ public class PlayerNPC
 				}
 			}
 			
-			return SHOP;
+			return null;
 		}
 	}
 }
