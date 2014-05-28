@@ -64,13 +64,6 @@ public class EconomyNPC extends JavaPlugin
 		for (Player player : getServer().getOnlinePlayers())
 			if (uuid.getPlayer(player.getName()) == null)
 				uuid.addPlayer(player);
-
-		
-		if (getServer().getPluginManager().getPlugin("TagAPI") == null)
-		{
-			log.severe("TagAPI is not installed!");
-			getServer().getPluginManager().disablePlugin(this);
-		}
 		
 		File npcFile = new File(getDataFolder(), "npcs.yml");
 		if (!npcFile.exists())
