@@ -51,7 +51,7 @@ public class PlayerNPC
 		this.plugin = plugin;
 		this.type = type;
 		if (this.type == NPCType.BLACKSMITH)
-			blacksmith = new BlacksmithHandler();
+			this.blacksmith = new BlacksmithHandler();
 	}
 	
 	public void createNPC(Player player, int id)
@@ -103,7 +103,7 @@ public class PlayerNPC
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
         plugin.storage.entities.add(this);
-        if (this.type != NPCType.SELL)
+        if (this.type == NPCType.SHOP)
         {
         	Map<?, ?> inventory = (Map<?, ?>) npcData.get("inventory");
         	for (Entry<?, ?> entry : inventory.entrySet())
@@ -161,7 +161,7 @@ public class PlayerNPC
 			for (int slot = 0; slot < inventory.getSize(); slot++)
 				inventory.setItem(slot, inv.getItemStack("" + slot));
 		
-		return inventory; 
+		return inventory;
 	}
 	
 	public Inventory getInventoryEdit(Player player)
