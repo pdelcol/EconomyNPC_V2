@@ -73,20 +73,6 @@ public class PlayerNPC
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
         
-        if (type == NPCType.SHOP)
-        {
-        	ItemStack item = new ItemStack(Material.DIAMOND, 64);
-        	ItemMeta meta = item.getItemMeta();
-        	meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
-        	item.setItemMeta(meta);
-        	inv.set("0", item);
-        }
-        else if (type == NPCType.KIT)
-        {
-        	ItemStack item = new ItemStack(Material.COAL, 64);
-        	inv.set("53", item);
-        }
-        
 		try {
 			ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
 		} catch (Exception e) {
