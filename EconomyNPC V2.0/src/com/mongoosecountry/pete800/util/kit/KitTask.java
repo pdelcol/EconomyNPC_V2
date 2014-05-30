@@ -18,6 +18,6 @@ public class KitTask extends BukkitRunnable{
 		handler.setNumTokens(0);
 		//There is a chance that this will actually make a legit UUID
 		//But it is so small that it is pretty much negligible
-		handler.setPlayer(UUID.randomUUID());
+		handler.setPlayer(null);
 	}
 }
