@@ -27,8 +27,8 @@ import org.bukkit.util.Vector;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.util.blacksmith.BlacksmithHandler;
-import com.mongoosecountry.pete800.util.blacksmith.BlacksmithTask;
+import com.mongoosecountry.pete800.util.blacksmith.*;
+import com.mongoosecountry.pete800.util.kit.*;
 import com.mongoosecountry.pete800.util.packet.WrapperPlayServerNamedEntitySpawn;
 
 public class PlayerNPC
@@ -39,7 +39,7 @@ public class PlayerNPC
 	YamlConfiguration inv = new YamlConfiguration();
 	NPCType type;
 	BlacksmithHandler blacksmith;
-	
+	KitHandler kit;
 	public PlayerNPC(EconomyNPC npc)
 	{
 		this("", npc, null);
@@ -52,6 +52,8 @@ public class PlayerNPC
 		this.type = type;
 		if (this.type == NPCType.BLACKSMITH)
 			this.blacksmith = new BlacksmithHandler();
+		if(this.type == NPCType.KIT)
+			this.kit = new KitHandler();
 	}
 	
 	public void createNPC(Player player, int id)
@@ -276,6 +278,57 @@ public class PlayerNPC
 			else
 				player.sendMessage(ChatColor.RED + "You do not have enough tokens for that");
 		}
+		else if (NPCType.KIT == this.type)
+		{
+			if(!kit.getPlayer().equals(player.getUniqueId()) && !kit.getNpcName().equals(this.name))
+			{
+				if(getInventory(player).getItem(getInventory(player).getSize()-1).getType() == Material.COAL)
+				{
+					ItemStack item = getInventory(player).getItem(getInventory(player).getSize()-1);
+					int numTokens = item.getAmount();
+					player.sendMessage(ChatColor.GOLD + "Do you really want to sell " + numTokens + " tokens for this kit?");
+					kit.setNpcName(this.name);
+					kit.setNumTokens(numTokens);
+					kit.setPlayer(player.getUniqueId());
+					@SuppressWarnings("unused")
+					BukkitTask task = new KitTask(this.plugin, kit).runTaskLater(this.plugin, 100);
+				}
+			}
+			else if(kit.getPlayer().equals(player.getUniqueId()) && kit.getNpcName().equals(this.name))
+			{
+				if(plugin.tokens.removeTokens(player.getUniqueId(), kit.getNumTokens()))
+				{
+					boolean dropped = false;
+					for (int i = 0; i < getInventory(player).getSize()-1; i++) {
+						if (getInventory(player).getItem(i) != null) {
+							//int damage = (short)new ItemStack(inv.getItem(i).getType()).getDurability() - inv.getItem(i).getDurability();		
+							if(player.getInventory().firstEmpty() != -1){
+								player.getInventory()
+										.addItem(
+												new ItemStack(getInventory(player).getItem(i).getType(), getInventory(player).getItem(i).getAmount(),getInventory(player).getItem(i).getDurability()));
+							}
+							else
+							{
+								player.getLocation().getWorld().dropItemNaturally(player.getLocation(), new ItemStack(getInventory(player).getItem(i).getType(), getInventory(player).getItem(i).getAmount(),getInventory(player).getItem(i).getDurability()));
+								dropped = true;
+							}
+						}
+					}
+					
+					if(dropped)
+					{
+						player.sendMessage("Your inventory was full so some items were dropped at your feet");
+					}
+					player.sendMessage(ChatColor.GREEN + "You exchanged " + kit.getNumTokens() + " tokens for a kit!");
+					
+				}
+				else
+				{
+					player.sendMessage(ChatColor.RED + "You do not have enough tokens to do this!");
+				}
+			}
+		}
+
 	}
 	
 	public NPCType getType()
