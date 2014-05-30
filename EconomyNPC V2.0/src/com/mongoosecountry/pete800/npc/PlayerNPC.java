@@ -72,11 +72,21 @@ public class PlayerNPC
         watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
-        ItemStack item = new ItemStack(Material.DIAMOND, 64);
-        ItemMeta meta = item.getItemMeta();
-        meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
-        item.setItemMeta(meta);
-        inv.set("0", item);
+        
+        if (type == NPCType.SHOP)
+        {
+        	ItemStack item = new ItemStack(Material.DIAMOND, 64);
+        	ItemMeta meta = item.getItemMeta();
+        	meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
+        	item.setItemMeta(meta);
+        	inv.set("0", item);
+        }
+        else if (type == NPCType.KIT)
+        {
+        	ItemStack item = new ItemStack(Material.COAL, 64);
+        	inv.set("53", item);
+        }
+        
 		try {
 			ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
 		} catch (Exception e) {
@@ -107,7 +117,7 @@ public class PlayerNPC
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
         plugin.storage.entities.add(this);
-        if (this.type == NPCType.SHOP)
+        if (this.type == NPCType.SHOP || this.type == NPCType.KIT)
         {
         	Map<?, ?> inventory = (Map<?, ?>) npcData.get("inventory");
         	for (Entry<?, ?> entry : inventory.entrySet())
@@ -116,9 +126,12 @@ public class PlayerNPC
             	{
             		int slot = Integer.valueOf(entry.getKey().toString());
             		ItemStack item = (ItemStack) entry.getValue();
-            		ItemMeta meta = item.getItemMeta();
-            		meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
-            		item.setItemMeta(meta);
+            		if (this.type == NPCType.SHOP)
+            		{
+	            		ItemMeta meta = item.getItemMeta();
+	            		meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
+	            		item.setItemMeta(meta);
+            		}
             		inv.set(slot + "", item);
             	}
             }
@@ -161,11 +174,8 @@ public class PlayerNPC
 	public Inventory getInventory(Player player)
 	{
 		Inventory inventory = Bukkit.createInventory(player, 54, name + "'s Shop");
-		if (type == NPCType.SHOP)
-			for (int slot = 0; slot < inventory.getSize(); slot++)
-				inventory.setItem(slot, inv.getItemStack("" + slot));
-		else if (type == NPCType.KIT)
-			inventory.setItem(53, new ItemStack(Material.COAL, 5));
+		for (int slot = 0; slot < inventory.getSize(); slot++)
+			inventory.setItem(slot, inv.getItemStack("" + slot));
 		
 		return inventory;
 	}
@@ -181,14 +191,19 @@ public class PlayerNPC
 	
 	public void updateInventory(Inventory inventory)
 	{
+		inv = new YamlConfiguration();
 		for (int slot = 0; slot < inventory.getSize(); slot++)
 		{
 			ItemStack item = inventory.getItem(slot);
 			if (item != null)
 			{
-				ItemMeta meta = item.getItemMeta();
-				meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
-				item.setItemMeta(meta);
+				if (type == NPCType.SHOP)
+				{
+					ItemMeta meta = item.getItemMeta();
+					meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
+					item.setItemMeta(meta);
+				}
+				
 				inv.set(slot + "", inventory.getItem(slot));
 			}
 		}
@@ -284,9 +299,7 @@ public class PlayerNPC
 		}
 		else if (NPCType.KIT == this.type)
 		{
-			//TODO need method to actually give the player the kit
-			//TODO need a way to determine what's in a kit
-			if ((kit.getPlayer() == null && kit.getNpcName() == null) || (!kit.getPlayer().equals(player.getUniqueId()) && !kit.getNpcName().equals(this.name)))
+			if ((kit.getPlayer() == null || !kit.getPlayer().equals(player.getUniqueId())) && (kit.getNpcName() == null || !kit.getNpcName().equals(this.name)))
 			{
 				if(getInventory(player).getItem(getInventory(player).getSize()-1).getType() == Material.COAL)
 				{

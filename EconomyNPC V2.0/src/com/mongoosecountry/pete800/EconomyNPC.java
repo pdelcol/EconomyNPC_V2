@@ -155,7 +155,7 @@ public class EconomyNPC extends JavaPlugin
 			values.put("name", entity.getPlayerName());
 			values.put("pitch", entity.getPitch());
 			values.put("yaw", entity.getYaw());
-			if (npc.getType() == NPCType.SHOP)
+			if (npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT)
 				values.put("inventory", npc.getInventory());
 			
 			npcList.add(values);

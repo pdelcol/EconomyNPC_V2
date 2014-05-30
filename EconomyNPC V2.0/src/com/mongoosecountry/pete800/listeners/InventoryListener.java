@@ -140,7 +140,7 @@ public class InventoryListener implements Listener
 					player.getInventory().addItem(item);
 			}
 		}
-		else if (npc.getType() == NPCType.SHOP && inv.getName().contains(" - Edit"))
+		else if ((npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT) && inv.getName().contains(" - Edit"))
 		{
 			npc.updateInventory(inv);
 			player.sendMessage("Shop updated.");
