@@ -93,6 +93,8 @@ public class PlayerNPC
 		this.type = NPCType.fromName(npcData.get("type").toString());
 		if (type == NPCType.BLACKSMITH)
 			blacksmith = new BlacksmithHandler();
+		if (type == NPCType.KIT)
+			kit = new KitHandler();
 		
 		spawned.setPlayerName(name);
 		spawned.setPosition(new Vector(Double.valueOf(npcData.get("x").toString()), Double.valueOf(npcData.get("y").toString()), Double.valueOf(npcData.get("z").toString())));
@@ -162,6 +164,8 @@ public class PlayerNPC
 		if (type == NPCType.SHOP)
 			for (int slot = 0; slot < inventory.getSize(); slot++)
 				inventory.setItem(slot, inv.getItemStack("" + slot));
+		else if (type == NPCType.KIT)
+			inventory.setItem(53, new ItemStack(Material.COAL, 5));
 		
 		return inventory;
 	}
@@ -280,7 +284,9 @@ public class PlayerNPC
 		}
 		else if (NPCType.KIT == this.type)
 		{
-			if(!kit.getPlayer().equals(player.getUniqueId()) && !kit.getNpcName().equals(this.name))
+			//TODO need method to actually give the player the kit
+			//TODO need a way to determine what's in a kit
+			if ((kit.getPlayer() == null && kit.getNpcName() == null) || (!kit.getPlayer().equals(player.getUniqueId()) && !kit.getNpcName().equals(this.name)))
 			{
 				if(getInventory(player).getItem(getInventory(player).getSize()-1).getType() == Material.COAL)
 				{

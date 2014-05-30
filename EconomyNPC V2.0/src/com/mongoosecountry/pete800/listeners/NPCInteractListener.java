@@ -31,13 +31,13 @@ public class NPCInteractListener extends PacketAdapter
 			{
 				if (npc.getEntityData().getEntityID() == use.getTargetID())
 				{
-					if(npc.getType() == NPCType.BLACKSMITH || npc.getType() == NPCType.XP)
+					if(npc.getType() == NPCType.SHOP)
 					{
-						npc.handleNonInventoryNPC(player, plugin.econ);
+						player.openInventory(npc.getInventory(player));
 					}
 					else
 					{
-						player.openInventory(npc.getInventory(player));
+						npc.handleNonInventoryNPC(player, plugin.econ);
 					}
 				}
 			}
