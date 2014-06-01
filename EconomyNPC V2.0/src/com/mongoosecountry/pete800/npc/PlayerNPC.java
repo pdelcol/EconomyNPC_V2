@@ -27,6 +27,8 @@ import org.bukkit.util.Vector;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mongoosecountry.pete800.EconomyNPC;
+import com.mongoosecountry.pete800.Exchange.ExchangeHandler;
+import com.mongoosecountry.pete800.Exchange.ExchangeTask;
 import com.mongoosecountry.pete800.util.blacksmith.*;
 import com.mongoosecountry.pete800.util.kit.*;
 import com.mongoosecountry.pete800.util.packet.WrapperPlayServerNamedEntitySpawn;
@@ -40,6 +42,7 @@ public class PlayerNPC
 	NPCType type;
 	BlacksmithHandler blacksmith;
 	KitHandler kit;
+	ExchangeHandler exchange;
 	public PlayerNPC(EconomyNPC npc)
 	{
 		this("", npc, null);
@@ -54,6 +57,8 @@ public class PlayerNPC
 			this.blacksmith = new BlacksmithHandler();
 		if(this.type == NPCType.KIT)
 			this.kit = new KitHandler();
+		if(this.type == NPCType.XP)
+			this.exchange = new ExchangeHandler();
 	}
 	
 	public void createNPC(Player player, int id)
@@ -272,16 +277,24 @@ public class PlayerNPC
 		}
 		else if (NPCType.XP == this.type)
 		{
-			if (plugin.tokens.removeTokens(player.getUniqueId(), 1))
+			if(exchange.getPlayerName().equals(player.getUniqueId()))
 			{
-				//Change as necessary for now.
-				double money = 1000.0;
-				OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
-				plugin.econ.depositPlayer(p, money);
-				player.sendMessage(ChatColor.GOLD + "You have traded 1 token for $" + money + ".");
+				if (plugin.tokens.removeTokens(player.getUniqueId(), 1))
+				{
+					//Change as necessary for now.
+					double money = 2000.0;
+					OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
+					plugin.econ.depositPlayer(p, money);
+					player.sendMessage(ChatColor.GOLD + "You have traded 1 token for $" + money + ".");
+				}
+				else
+					player.sendMessage(ChatColor.RED + "You do not have enough tokens for that");
+			}else{
+				player.sendMessage(ChatColor.BLUE + "You are about to exchange 1 token for $2000");
+				player.sendMessage(ChatColor.BLUE + "Right click again to continue");
+				@SuppressWarnings("unused")
+				BukkitTask task = new ExchangeTask(this.plugin, exchange).runTaskLater(this.plugin, 100);
 			}
-			else
-				player.sendMessage(ChatColor.RED + "You do not have enough tokens for that");
 		}
 		else if (NPCType.KIT == this.type)
 		{
@@ -302,7 +315,7 @@ public class PlayerNPC
 			else if(kit.getPlayer().equals(player.getUniqueId()) && kit.getNpcName().equals(this.name))
 			{
 				if(plugin.tokens.removeTokens(player.getUniqueId(), kit.getNumTokens()))
-				{
+				{ 
 					boolean dropped = false;
 					for (int i = 0; i < getInventory(player).getSize()-1; i++) {
 						if (getInventory(player).getItem(i) != null) {
@@ -333,7 +346,10 @@ public class PlayerNPC
 				}
 			}
 		}
-
+		else if(NPCType.BETTING == this.type)
+		{
+			//I'm going to offload this code to another class because it might be a lot of code
+		}
 	}
 	
 	public NPCType getType()
