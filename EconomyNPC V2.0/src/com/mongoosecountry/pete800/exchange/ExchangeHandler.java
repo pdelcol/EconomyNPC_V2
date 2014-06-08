@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.Exchange;
+package com.mongoosecountry.pete800.exchange;
 
 import java.util.UUID;
 

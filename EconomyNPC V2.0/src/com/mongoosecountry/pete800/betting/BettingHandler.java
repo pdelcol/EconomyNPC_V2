@@ -1,7 +1,13 @@
-package com.mongoosecountry.pete800.Betting;
+package com.mongoosecountry.pete800.betting;
 
 import java.util.HashMap;
 import java.util.UUID;
+
+import net.milkbowl.vault.economy.Economy;
+
+import org.bukkit.entity.Player;
+
+import com.mongoosecountry.pete800.npc.PlayerNPC;
 
 public class BettingHandler {
 	UUID player, challanger;
