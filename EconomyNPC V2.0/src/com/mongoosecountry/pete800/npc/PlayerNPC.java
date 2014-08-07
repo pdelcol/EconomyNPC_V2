@@ -42,7 +42,8 @@ public class PlayerNPC
 	NPCType type;
 	BlacksmithHandler blacksmith;
 	KitHandler kit;
-	ExchangeHandler exchange;
+	ExchangeHandler exchange = new ExchangeHandler();
+	
 	public PlayerNPC(EconomyNPC npc)
 	{
 		this("", npc, null);
@@ -277,7 +278,7 @@ public class PlayerNPC
 		}
 		else if (NPCType.XP == this.type)
 		{
-			if(exchange.getPlayerName().equals(player.getUniqueId()))
+			if(exchange.getPlayerName() != null && exchange.getPlayerName() == player.getUniqueId())
 			{
 				if (plugin.tokens.removeTokens(player.getUniqueId(), 1))
 				{
@@ -292,6 +293,7 @@ public class PlayerNPC
 			}else{
 				player.sendMessage(ChatColor.BLUE + "You are about to exchange 1 token for $2000");
 				player.sendMessage(ChatColor.BLUE + "Right click again to continue");
+				this.exchange.setPlayerName(player.getUniqueId());
 				@SuppressWarnings("unused")
 				BukkitTask task = new ExchangeTask(this.plugin, exchange).runTaskLater(this.plugin, 100);
 			}
@@ -300,7 +302,11 @@ public class PlayerNPC
 		{
 			if ((kit.getPlayer() == null || !kit.getPlayer().equals(player.getUniqueId())) && (kit.getNpcName() == null || !kit.getNpcName().equals(this.name)))
 			{
-				if(getInventory(player).getItem(getInventory(player).getSize()-1).getType() == Material.COAL)
+				if (getInventory(player).getItem(getInventory(player).getSize() - 1) == null || getInventory(player).getItem(getInventory(player).getSize() - 1).getType() != Material.COAL)
+				{
+					player.sendMessage("This NPC is not ready for player interaction. :(");
+				}
+				else if(getInventory(player).getItem(getInventory(player).getSize()-1).getType() == Material.COAL)
 				{
 					ItemStack item = getInventory(player).getItem(getInventory(player).getSize()-1);
 					int numTokens = item.getAmount();

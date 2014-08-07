@@ -31,7 +31,7 @@ public class NPCInteractListener extends PacketAdapter
 			{
 				if (npc.getEntityData().getEntityID() == use.getTargetID())
 				{
-					if(npc.getType() == NPCType.SHOP)
+					if(npc.getType() == NPCType.SHOP || npc.getType() == NPCType.SELL)
 					{
 						player.openInventory(npc.getInventory(player));
 					}
