@@ -23,8 +23,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.mongoosecountry.pete800.hanlders.TokenHandler;
-import com.mongoosecountry.pete800.hanlders.packet.WrapperPlayServerNamedEntitySpawn;
 import com.mongoosecountry.pete800.listeners.InventoryListener;
 import com.mongoosecountry.pete800.listeners.NPCInteractListener;
 import com.mongoosecountry.pete800.listeners.PlayerListener;
@@ -32,7 +30,9 @@ import com.mongoosecountry.pete800.npc.EntityStorage;
 import com.mongoosecountry.pete800.npc.PlayerNPC;
 import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
 import com.mongoosecountry.pete800.util.Prices;
+import com.mongoosecountry.pete800.util.TokenHandler;
 import com.mongoosecountry.pete800.util.UUIDFinder;
+import com.mongoosecountry.pete800.util.packet.WrapperPlayServerNamedEntitySpawn;
 
 
 public class EconomyNPC extends JavaPlugin

@@ -27,11 +27,11 @@ import org.bukkit.util.Vector;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.handlers.blacksmith.*;
-import com.mongoosecountry.pete800.handlers.exchange.ExchangeHandler;
-import com.mongoosecountry.pete800.handlers.exchange.ExchangeTask;
-import com.mongoosecountry.pete800.handlers.kit.*;
-import com.mongoosecountry.pete800.hanlders.packet.WrapperPlayServerNamedEntitySpawn;
+import com.mongoosecountry.pete800.exchange.ExchangeHandler;
+import com.mongoosecountry.pete800.exchange.ExchangeTask;
+import com.mongoosecountry.pete800.util.blacksmith.*;
+import com.mongoosecountry.pete800.util.kit.*;
+import com.mongoosecountry.pete800.util.packet.WrapperPlayServerNamedEntitySpawn;
 
 public class PlayerNPC
 {

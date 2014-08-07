@@ -6,9 +6,9 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.hanlders.packet.WrapperPlayClientUseEntity;
 import com.mongoosecountry.pete800.npc.PlayerNPC;
 import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.util.packet.WrapperPlayClientUseEntity;
 
 public class NPCInteractListener extends PacketAdapter
 {
