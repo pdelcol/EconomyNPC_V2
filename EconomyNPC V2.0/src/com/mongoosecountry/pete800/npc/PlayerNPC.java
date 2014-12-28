@@ -68,7 +68,7 @@ public class PlayerNPC
 		spawned.setEntityID(id); 
 		spawned.setPosition(player.getLocation().toVector());
 		
-		spawned.setPlayerUUID(UUID.randomUUID().toString());
+		spawned.setPlayerUUID(UUID.randomUUID());
 		spawned.setPlayerName(name); //If you set the name of a npc it renders the skin of the player with that skin!
 		spawned.setYaw(player.getLocation().getYaw());
 		spawned.setPitch(player.getLocation().getPitch());
@@ -90,7 +90,7 @@ public class PlayerNPC
 	{
 		spawned = new WrapperPlayServerNamedEntitySpawn();
 		spawned.setEntityID(Integer.valueOf(npcData.get("id").toString()));
-		spawned.setPlayerUUID(UUID.randomUUID().toString());
+		spawned.setPlayerUUID(UUID.randomUUID());
 		this.name = npcData.get("name").toString();
 		this.type = NPCType.fromName(npcData.get("type").toString());
 		if (type == NPCType.BLACKSMITH)

@@ -1,5 +1,7 @@
 package com.mongoosecountry.pete800.hanlders.packet;
 
+import java.util.UUID;
+
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -101,16 +103,16 @@ public class WrapperPlayServerNamedEntitySpawn extends AbstractPacket {
      * Retrieve the UUID of the player.
      * @return The UUID, or NULL if not set.
      */
-    public String getPlayerUUID() {
+    public UUID getPlayerUUID() {
             WrappedGameProfile profile = getProfile();
-        return profile != null ? profile.getId() : null;
+        return profile != null ? profile.getUUID() : null;
     }
     
     /**
      * Set the UUID of the player.
      * @param uuid - the UUID.
      */
-    public void setPlayerUUID(String uuid) {
+    public void setPlayerUUID(UUID uuid) {
             setProfile(new WrappedGameProfile(uuid, getPlayerName()));
     }
 
