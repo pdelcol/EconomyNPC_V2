@@ -117,6 +117,7 @@ public class EconomyNPC extends JavaPlugin
 		{
 			log.warning("Vault not detected. Shutting down.");
 			getServer().getPluginManager().disablePlugin(this);
+			return;
 		}
 		
 		for (Player player : getServer().getOnlinePlayers())
