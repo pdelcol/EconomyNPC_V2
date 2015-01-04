@@ -42,7 +42,7 @@ public class EntityStorage
 				if (id == n.getEntityData().getEntityId())
 					id++;
 			
-			npc.createNPC(plugin.getServer().getPlayer(playerName).getPlayer(), id);
+			npc.createNPC(plugin.getServer().getPlayer(playerName).getPlayer(), entityName, id);
 			entities.add(npc);
 			id++;
 			plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
