@@ -33,6 +33,7 @@ import com.mongoosecountry.pete800.handlers.exchange.ExchangeTask;
 import com.mongoosecountry.pete800.handlers.kit.*;
 import com.mongoosecountry.pete800.hanlders.packet.WrapperPlayServerNamedEntitySpawn;
 import com.mongoosecountry.pete800.util.UUIDFetcher;
+import com.mongoosecountry.pete800.util.Utils;
 
 public class PlayerNPC
 {
@@ -69,7 +70,6 @@ public class PlayerNPC
 		spawned.setEntityId(id); 
 		spawned.setPosition(player.getLocation().toVector());
 		
-		//TODO change this so that it uses Bukkit.getOfflinePlayer
 		try {
 			spawned.setPlayerUuid(UUIDFetcher.getUUIDOf(entityName));
 		} catch (Exception e) {
@@ -85,11 +85,7 @@ public class PlayerNPC
         watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
         spawned.setMetadata(watcher);
         
-		try {
-			ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        Utils.broadcastPacket(spawned.getHandle());
 	}
 	
 	public void createNPC(Map<?, ?> npcData)
@@ -134,29 +130,18 @@ public class PlayerNPC
             }
         }
         
-		try
-		{
-			ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+        Utils.broadcastPacket(spawned.getHandle());
 	}
 	
 	public void removeNPC()
 	{
-		try {
-			WrappedDataWatcher watcher = new WrappedDataWatcher();
-	        watcher.setObject(0, (byte) 0); // Flags. Must be a byte.
-	        watcher.setObject(6, (float) 0);
-	        watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
-	        watcher.setObject(8, (byte) 0); // Visible potion "bubbles". Zero means none.
-	        spawned.setMetadata(watcher);
-	        ProtocolLibrary.getProtocolManager().broadcastServerPacket(spawned.getHandle());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		WrappedDataWatcher watcher = new WrappedDataWatcher();
+        watcher.setObject(0, (byte) 0); // Flags. Must be a byte.
+        watcher.setObject(6, (float) 0);
+        watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
+        watcher.setObject(8, (byte) 0); // Visible potion "bubbles". Zero means none.
+        spawned.setMetadata(watcher);
+        Utils.broadcastPacket(spawned.getHandle());
 	}
 	
 	public void resendPacket(Player p)

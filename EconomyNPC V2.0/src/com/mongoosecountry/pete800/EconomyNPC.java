@@ -188,7 +188,8 @@ public class EconomyNPC extends JavaPlugin
 		{
 			if(sender instanceof Player)
 			{
-				Player player = (Player)sender;
+				Player player = (Player) sender;
+				//args[1] disconnects players until server reload/restart should it not match a Minecraft username.
 				storage.createEntity(args[1], player.getUniqueId(), NPCType.fromName(args[0]));
 				return true;
 			}
