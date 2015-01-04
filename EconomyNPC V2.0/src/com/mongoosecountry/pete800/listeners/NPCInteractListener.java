@@ -29,7 +29,7 @@ public class NPCInteractListener extends PacketAdapter
 			WrapperPlayClientUseEntity use = new WrapperPlayClientUseEntity(event.getPacket());
 			for (PlayerNPC npc : plugin.storage.getEntities())
 			{
-				if (npc.getEntityData().getEntityID() == use.getTargetID())
+				if (npc.getEntityData().getEntityId() == use.getTarget())
 				{
 					if(npc.getType() == NPCType.SHOP || npc.getType() == NPCType.SELL)
 					{

@@ -1,11 +1,9 @@
 package com.mongoosecountry.pete800.hanlders.packet;
 
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
+import org.bukkit.util.Vector;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
 
 public class WrapperPlayClientUseEntity extends AbstractPacket {
@@ -21,52 +19,45 @@ public class WrapperPlayClientUseEntity extends AbstractPacket {
     }
     
     /**
-     * Retrieve the entity ID the player is interacting with.
+     * Retrieve Target.
      * @return The current Target
-    */
-    public int getTargetID() {
+     */
+    public int getTarget() {
         return handle.getIntegers().read(0);
     }
     
     /**
-     * Retrieve the entity the player is interacting with.
-     * @param event - the world this event occured in.
-     * @return The target entity.
-     */
-    public Entity getTarget(World world) {
-    	return handle.getEntityModifier(world).read(0);
-    }
-    
-    /**
-     * Retrieve the entity the player is interacting with.
-     * @param event - the current packet event.
-     * @return The target entity.
-     */
-    public Entity getTarget(PacketEvent event) {
-    	return getTarget(event.getPlayer().getWorld());
-    }
-    
-    /**
-     * Set the entity ID the player is interacting with.
+     * Set Target.
      * @param value - new value.
-    */
-    public void setTargetID(int value) {
+     */
+    public void setTarget(int value) {
         handle.getIntegers().write(0, value);
     }
     
     /**
-     * Retrieve the use action.
-     * @return The action.
-    */
-    public EntityUseAction getMouse() {
+     * Retrieve Type.
+     * <p>
+     * Notes: 0 = INTERACT, 1 = ATTACK, 2 = INTERACT_AT
+     * @return The current Type
+     */
+    public EntityUseAction getType() {
         return handle.getEntityUseActions().read(0);
     }
     
     /**
-     * Set the use action.
-     * @param value - new action.
-    */
-    public void setMouse(EntityUseAction value) {
+     * Set Type.
+     * @param value - new value.
+     */
+    public void setType(EntityUseAction value) {
         handle.getEntityUseActions().write(0, value);
     }
+
+    public Vector getTargetVector() {
+    	return handle.getVectors().read(0);
+    }
+
+    public void setTargetVector(Vector value) {
+    	handle.getVectors().write(0, value);
+    }
+ 
 }

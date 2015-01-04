@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import com.mongoosecountry.pete800.EconomyNPC;
@@ -38,7 +39,7 @@ public class EntityStorage
 		{
 			PlayerNPC npc = new PlayerNPC(entityName, plugin, type);
 			for (PlayerNPC n : entities)
-				if (id == n.getEntityData().getEntityID())
+				if (id == n.getEntityData().getEntityId())
 					id++;
 			
 			npc.createNPC(plugin.getServer().getPlayer(playerName).getPlayer(), id);
@@ -80,7 +81,7 @@ public class EntityStorage
 	public PlayerNPC getNPC(String name)
 	{
 		for (PlayerNPC npc : entities)
-			if (npc.spawned.getPlayerName().equals(name))
+			if (Bukkit.getOfflinePlayer(npc.spawned.getPlayerUuid()).getName().equals(name))
 				return npc;
 		
 		return null;

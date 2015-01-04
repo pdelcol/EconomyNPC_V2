@@ -32,6 +32,7 @@ import com.mongoosecountry.pete800.handlers.exchange.ExchangeHandler;
 import com.mongoosecountry.pete800.handlers.exchange.ExchangeTask;
 import com.mongoosecountry.pete800.handlers.kit.*;
 import com.mongoosecountry.pete800.hanlders.packet.WrapperPlayServerNamedEntitySpawn;
+import com.mongoosecountry.pete800.util.UUIDFetcher;
 
 public class PlayerNPC
 {
@@ -62,14 +63,19 @@ public class PlayerNPC
 			this.exchange = new ExchangeHandler();
 	}
 	
-	public void createNPC(Player player, int id)
+	public void createNPC(Player player, String entityName, int id)
 	{
 		spawned = new WrapperPlayServerNamedEntitySpawn();
-		spawned.setEntityID(id); 
+		spawned.setEntityId(id); 
 		spawned.setPosition(player.getLocation().toVector());
 		
-		spawned.setPlayerUUID(UUID.randomUUID());
-		spawned.setPlayerName(name); //If you set the name of a npc it renders the skin of the player with that skin!
+		//TODO change this so that it uses Bukkit.getOfflinePlayer
+		try {
+			spawned.setPlayerUuid(UUIDFetcher.getUUIDOf(entityName));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		spawned.setYaw(player.getLocation().getYaw());
 		spawned.setPitch(player.getLocation().getPitch());
 		
@@ -89,8 +95,8 @@ public class PlayerNPC
 	public void createNPC(Map<?, ?> npcData)
 	{
 		spawned = new WrapperPlayServerNamedEntitySpawn();
-		spawned.setEntityID(Integer.valueOf(npcData.get("id").toString()));
-		spawned.setPlayerUUID(UUID.randomUUID());
+		spawned.setEntityId(Integer.valueOf(npcData.get("id").toString()));
+		spawned.setPlayerUuid(UUID.fromString(npcData.get("uuid").toString()));
 		this.name = npcData.get("name").toString();
 		this.type = NPCType.fromName(npcData.get("type").toString());
 		if (type == NPCType.BLACKSMITH)
@@ -98,7 +104,6 @@ public class PlayerNPC
 		if (type == NPCType.KIT)
 			kit = new KitHandler();
 		
-		spawned.setPlayerName(name);
 		spawned.setPosition(new Vector(Double.valueOf(npcData.get("x").toString()), Double.valueOf(npcData.get("y").toString()), Double.valueOf(npcData.get("z").toString())));
 		spawned.setYaw(Float.valueOf(npcData.get("yaw").toString()));
 		spawned.setPitch(Float.valueOf(npcData.get("pitch").toString()));
@@ -174,7 +179,7 @@ public class PlayerNPC
 	
 	public Inventory getInventoryEdit(Player player)
 	{
-		Inventory inventory = Bukkit.createInventory(player, 54, spawned.getPlayerName() + " - Edit");
+		Inventory inventory = Bukkit.createInventory(player, 54, Bukkit.getOfflinePlayer(spawned.getPlayerUuid()).getName() + " - Edit");
 		for (int slot = 0; slot < inventory.getSize(); slot++)
 			inventory.setItem(slot, inv.getItemStack("" + slot));
 		

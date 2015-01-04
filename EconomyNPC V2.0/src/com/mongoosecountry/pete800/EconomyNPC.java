@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import net.milkbowl.vault.economy.Economy;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -148,12 +149,12 @@ public class EconomyNPC extends JavaPlugin
 		{
 			WrapperPlayServerNamedEntitySpawn entity = npc.getEntityData();
 			Map<String, Object> values = new HashMap<String, Object>();
-			values.put("id", entity.getEntityID());
+			values.put("uuid", entity.getPlayerUuid().toString());
+			values.put("id", entity.getEntityId());
 			values.put("x", entity.getPosition().getX());
 			values.put("y", entity.getPosition().getY());
 			values.put("z", entity.getPosition().getZ());
 			values.put("type", npc.getType().toString());
-			values.put("name", entity.getPlayerName());
 			values.put("pitch", entity.getPitch());
 			values.put("yaw", entity.getYaw());
 			if (npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT)
@@ -210,7 +211,7 @@ public class EconomyNPC extends JavaPlugin
 				Player player = (Player) sender;
 				for (PlayerNPC npc : storage.getEntities())
 				{
-					if (npc.getEntityData().getPlayerName().equals(args[0]))
+					if (Bukkit.getOfflinePlayer(npc.getEntityData().getPlayerUuid()).getName().equals(args[0]))
 					{
 						player.openInventory(npc.getInventoryEdit(player));
 						return true;
