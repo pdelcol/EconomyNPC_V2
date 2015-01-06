@@ -22,7 +22,7 @@ public class Utils
 			}
 			catch (InvocationTargetException e)
 			{
-				player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "An packet sending error has occurred. NPC's might be hiding from you :c");
+				player.sendMessage(ChatColor.RED + "A packet sending error has occurred. NPC's might be hiding from you :c");
 			}
 		}
 	}

@@ -70,12 +70,26 @@ public class PlayerNPC
 		spawned.setEntityId(id); 
 		spawned.setPosition(player.getLocation().toVector());
 		
-		try {
-			spawned.setPlayerUuid(UUIDFetcher.getUUIDOf(entityName));
-		} catch (Exception e) {
-			e.printStackTrace();
+		UUID uuid = null;
+		try
+		{
+			uuid = UUIDFetcher.getUUIDOf(entityName);
+		}
+		catch (Exception e)
+		{
+			player.sendMessage(ChatColor.RED + "An error while pinging the Mojang servers.");
+			spawned = null;
+			return;
 		}
 		
+		if (uuid == null)
+		{
+			player.sendMessage(ChatColor.RED + "There is no Minecraft name that matches " + entityName);
+			spawned = null;
+			return;
+		}
+		
+		spawned.setPlayerUuid(uuid);
 		spawned.setYaw(player.getLocation().getYaw());
 		spawned.setPitch(player.getLocation().getPitch());
 		

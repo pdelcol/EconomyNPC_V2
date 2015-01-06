@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import com.mongoosecountry.pete800.EconomyNPC;
 import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
@@ -21,7 +22,7 @@ public class EntityStorage
 		this.plugin = plugin;
 	}
 	
-	public void createEntity(String entityName, UUID playerName, NPCType type)
+	public void createEntity(String entityName, Player player, NPCType type)
 	{
 		boolean exists = false;
 		String name = "";
@@ -31,7 +32,7 @@ public class EntityStorage
 			if(name.equalsIgnoreCase(entityName))
 			{
 				exists = true;
-				plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.RED + "You cannot create an NPC with that name. Try a different name");
+				player.sendMessage(ChatColor.RED + "You cannot create an NPC with that name. Try a different name");
 			}
 		}
 		
@@ -41,11 +42,23 @@ public class EntityStorage
 			for (PlayerNPC n : entities)
 				if (id == n.getEntityData().getEntityId())
 					id++;
+			try
+			{
+				npc.createNPC(player, entityName, id);
+			}
+			catch (NullPointerException e)
+			{
+				e.printStackTrace();
+				return;
+			}
 			
-			npc.createNPC(Bukkit.getPlayer(playerName), entityName, id);
+			//This should only be true should we attempt to use an invalid Minecraft username
+			if (npc.spawned == null)
+				return;
+			
 			entities.add(npc);
 			id++;
-			plugin.getServer().getPlayer(playerName).sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
+			player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
 		}
 	}
 	
