@@ -14,4 +14,4 @@ commands:
     tokens:
       description: Give/take tokens from players.
       usage: "Usage: /tokens"
-depend: [ProtocolLib, Vault]
+depend: [Vault]

@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.handlers.exchange;
+package com.mongoosecountry.pete800.handler.exchange;
 
 import org.bukkit.scheduler.BukkitRunnable;
 

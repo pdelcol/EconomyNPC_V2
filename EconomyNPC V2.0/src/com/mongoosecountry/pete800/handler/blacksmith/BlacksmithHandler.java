@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.handlers.blacksmith;
+package com.mongoosecountry.pete800.handler.blacksmith;
 
 
 import java.util.Map;

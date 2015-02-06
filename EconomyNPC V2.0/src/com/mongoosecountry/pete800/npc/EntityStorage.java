@@ -1,11 +1,12 @@
 package com.mongoosecountry.pete800.npc;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import com.mongoosecountry.pete800.EconomyNPC;
@@ -15,92 +16,118 @@ public class EntityStorage
 {
 	ArrayList<PlayerNPC> entities = new ArrayList<PlayerNPC>();
 	EconomyNPC plugin;
-	int id = 1000;
+	private File npcFile;
 	
 	public EntityStorage(EconomyNPC plugin)
 	{
 		this.plugin = plugin;
-	}
-	
-	public void createEntity(String entityName, Player player, NPCType type)
-	{
-		boolean exists = false;
-		String name = "";
-		for(int x = 0; x < entities.size(); x++)
+		npcFile = new File(plugin.getDataFolder(), "npcs.yml");
+		if (!npcFile.exists())
 		{
-			name = entities.get(x).name;
-			if(name.equalsIgnoreCase(entityName))
+			try
 			{
-				exists = true;
-				player.sendMessage(ChatColor.RED + "You cannot create an NPC with that name. Try a different name");
+				npcFile.createNewFile();
+			}
+			catch (IOException e)
+			{
+				plugin.log.severe("Error creating npcs.yml!");
+				plugin.getServer().getPluginManager().disablePlugin(plugin);
 			}
 		}
 		
-		if(!exists)
-		{
-			PlayerNPC npc = new PlayerNPC(entityName, plugin, type);
-			for (PlayerNPC n : entities)
-				if (id == n.getEntityData().getEntityId())
-					id++;
-			try
-			{
-				npc.createNPC(player, entityName, id);
-			}
-			catch (NullPointerException e)
-			{
-				e.printStackTrace();
-				return;
-			}
-			
-			//This should only be true should we attempt to use an invalid Minecraft username
-			if (npc.spawned == null)
-				return;
-			
-			entities.add(npc);
-			id++;
-			player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
-		}
+		YamlConfiguration npcs = YamlConfiguration.loadConfiguration(npcFile);
+		for (String name : npcs.getStringList("names"))
+			entities.add(new PlayerNPC(plugin, name, npcs.getConfigurationSection("npc." + name)));
 	}
 	
-	public void removeEntity(String entityName, UUID playerName)
+	public boolean createNPC(String npcName, Player player, NPCType type)
+	{
+		for(PlayerNPC npc : entities)
+		{
+			if(npc.getVillager().getCustomName().equalsIgnoreCase(npcName))
+			{
+				player.sendMessage(ChatColor.RED + "You cannot create an NPC with that name. Try a different name");
+				return false;
+			}
+		}
+		
+		PlayerNPC npc = new PlayerNPC(plugin, type);
+		try
+		{
+			npc.createNPC(player, npcName);
+		}
+		catch (NullPointerException e)
+		{
+			e.printStackTrace();
+			player.sendMessage("Debug: error!");
+			return false;
+		}
+		
+		entities.add(npc);
+		player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
+		return true;
+	}
+	
+	public boolean removeNPC(String npcName, Player player)
 	{
 		boolean exists = false;
-		String name = "";
 		int removeNum = Integer.MAX_VALUE;
 		for(int x = 0; x < entities.size(); x++)
 		{
-			name = entities.get(x).name;
-			if(name.equalsIgnoreCase(entityName))
+			if(entities.get(x).getVillager().getCustomName().equalsIgnoreCase(npcName))
 			{
 				removeNum = x;
 				exists = true;
 			}
 		}
+		
 		if(exists && removeNum != Integer.MAX_VALUE)
 		{
 			entities.get(removeNum).removeNPC();
 			entities.remove(removeNum);
+			player.sendMessage("Debug: success!");
+			return true;
 		}
-	}
-	
-	public void resendPackets(UUID playerName)
-	{
-		for(int x = 0; x < entities.size(); x++)
+		else
 		{
-			entities.get(x).resendPacket(plugin.getServer().getPlayer(playerName));
+			player.sendMessage("Debug: error!");
+			return false;
 		}
 	}
 	
 	public PlayerNPC getNPC(String name)
 	{
 		for (PlayerNPC npc : entities)
-			if (Bukkit.getOfflinePlayer(npc.spawned.getPlayerUuid()).getName().equals(name))
+			if (npc.getVillager().getCustomName().equalsIgnoreCase(name))
 				return npc;
 		
 		return null;
 	}
 	
-	public List<PlayerNPC> getEntities()
+	public void save()
+	{
+		YamlConfiguration npcs = new YamlConfiguration();
+		List<String> names = new ArrayList<String>();
+		for (PlayerNPC npc : entities)
+		{
+			String name = npc.name;
+			npcs.set("npc." + name, npc.save());
+			names.add(name);
+			npc.despawnNPC();
+		}
+		
+		npcs.set("names", names);
+		try
+		{
+			npcs.save(npcFile);
+		}
+		catch (IOException e)
+		{
+			plugin.log.warning("Error saving npcs.yml!");
+		}
+	}
+	
+	public List<PlayerNPC> getNPCs()
 	{
 		return entities;
 	}

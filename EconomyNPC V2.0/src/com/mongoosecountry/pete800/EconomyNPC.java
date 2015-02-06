@@ -1,12 +1,5 @@
 package com.mongoosecountry.pete800;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import net.milkbowl.vault.economy.Economy;
@@ -16,25 +9,19 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.mongoosecountry.pete800.hanlders.TokenHandler;
-import com.mongoosecountry.pete800.hanlders.packet.WrapperPlayServerNamedEntitySpawn;
+import com.mongoosecountry.pete800.hanlder.tokens.TokenHandler;
+import com.mongoosecountry.pete800.listeners.EntityListener;
 import com.mongoosecountry.pete800.listeners.InventoryListener;
-import com.mongoosecountry.pete800.listeners.NPCInteractListener;
 import com.mongoosecountry.pete800.listeners.PlayerListener;
 import com.mongoosecountry.pete800.npc.EntityStorage;
 import com.mongoosecountry.pete800.npc.PlayerNPC;
 import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
 import com.mongoosecountry.pete800.util.Prices;
-import com.mongoosecountry.pete800.util.UUIDFinder;
-
+import com.mongoosecountry.pete800.util.UUIDFetcher;
 
 public class EconomyNPC extends JavaPlugin
 {
@@ -43,76 +30,15 @@ public class EconomyNPC extends JavaPlugin
 	public Logger log;
 	public Prices prices;
 	public TokenHandler tokens;
-	public UUIDFinder uuid;
 	
 	public void onEnable()
 	{
+		saveDefaultConfig();
 		log = getLogger();
 		storage = new EntityStorage(this);
 		prices = new Prices(this);
 		tokens = new TokenHandler(this);
-		
-		try
-		{
-			uuid = new UUIDFinder(this);
-		}
-		catch (Exception e)
-		{
-			log.severe("Error with players.yml!");
-			getServer().getPluginManager().disablePlugin(this);
-		}
-		
-		for (Player player : getServer().getOnlinePlayers())
-			if (uuid.getPlayer(player.getName()) == null)
-				uuid.addPlayer(player);
-		
-		File npcFile = new File(getDataFolder(), "npcs.yml");
-		if (!npcFile.exists())
-		{
-			try
-			{
-				npcFile.createNewFile();
-			}
-			catch (IOException e)
-			{
-				log.severe("Error creating npcs.yml!");
-				getServer().getPluginManager().disablePlugin(this);
-			}
-		}
-		
-		YamlConfiguration npcs = new YamlConfiguration();
-		try
-		{
-			npcs.load(npcFile);
-		}
-		catch (FileNotFoundException e)
-		{
-			log.severe("Error, npcs.yml is missing!");
-			getServer().getPluginManager().disablePlugin(this);
-		}
-		catch (IOException e)
-		{
-			log.severe("Error parsing npcs.yml!");
-			getServer().getPluginManager().disablePlugin(this);
-		}
-		catch (InvalidConfigurationException e)
-		{
-			log.severe("Formatting error in npcs.yml!");
-			getServer().getPluginManager().disablePlugin(this);
-		}
-		
-		if (npcs.getList("npcs") instanceof List)
-		{
-			List<?> npcList = npcs.getList("npcs");
-			for (Object obj : npcList)
-			{
-				if (obj instanceof Map)
-				{
-					PlayerNPC p = new PlayerNPC(this);
-					p.createNPC((Map<?, ?>) obj);
-				}
-			}
-		}
+		tokens.load();
 		
 		if (!setupEconomy())
 		{
@@ -121,11 +47,7 @@ public class EconomyNPC extends JavaPlugin
 			return;
 		}
 		
-		for (Player player : getServer().getOnlinePlayers())
-			storage.resendPackets(player.getUniqueId());
-		
-		ProtocolLibrary.getProtocolManager().addPacketListener(new NPCInteractListener(this, PacketType.Play.Client.USE_ENTITY));
-		
+		getServer().getPluginManager().registerEvents(new EntityListener(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 		getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
 		
@@ -134,45 +56,8 @@ public class EconomyNPC extends JavaPlugin
 	
 	public void onDisable()
 	{
-		try
-		{
-			uuid.saveUUIDs();
-		}
-		catch (Exception e)
-		{
-			log.severe("Error saving players.yml");
-		}
-		
-		YamlConfiguration npcs = new YamlConfiguration();
-		List<Map<String, Object>> npcList = new ArrayList<Map<String, Object>>();
-		for (PlayerNPC npc : storage.getEntities())
-		{
-			WrapperPlayServerNamedEntitySpawn entity = npc.getEntityData();
-			Map<String, Object> values = new HashMap<String, Object>();
-			values.put("uuid", entity.getPlayerUuid().toString());
-			values.put("id", entity.getEntityId());
-			values.put("x", entity.getPosition().getX());
-			values.put("y", entity.getPosition().getY());
-			values.put("z", entity.getPosition().getZ());
-			values.put("type", npc.getType().toString());
-			values.put("pitch", entity.getPitch());
-			values.put("yaw", entity.getYaw());
-			if (npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT)
-				values.put("inventory", npc.getInventory());
-			
-			npcList.add(values);
-		}
-		
-		npcs.set("npcs", npcList);
-		try
-		{
-			npcs.save(new File(getDataFolder(), "npcs.yml"));
-		}
-		catch (IOException e)
-		{
-			log.warning("Error saving npcs.yml!");
-		}
-		
+		tokens.save();
+		storage.save();
 		log.info("EconomyNPC is disabled!");
 	}
 	
@@ -189,7 +74,7 @@ public class EconomyNPC extends JavaPlugin
 			if(sender instanceof Player)
 			{
 				Player player = (Player) sender;
-				storage.createEntity(args[1], player, NPCType.fromName(args[0]));
+				storage.createNPC(args[1], player, NPCType.fromName(args[0]));
 				return true;
 			}
 		}
@@ -198,9 +83,7 @@ public class EconomyNPC extends JavaPlugin
 		{
 			if(sender instanceof Player)
 			{
-				Player player = (Player)sender;
-				storage.removeEntity(args[0], player.getUniqueId());
-				return true;
+				return storage.removeNPC(args[0], (Player) sender);
 			}
 		}
 		
@@ -209,9 +92,9 @@ public class EconomyNPC extends JavaPlugin
 			if (sender instanceof Player)
 			{
 				Player player = (Player) sender;
-				for (PlayerNPC npc : storage.getEntities())
+				for (PlayerNPC npc : storage.getNPCs())
 				{
-					if (Bukkit.getOfflinePlayer(npc.getEntityData().getPlayerUuid()).getName().equals(args[0]))
+					if (npc.getVillager().getCustomName().equals(args[0]))
 					{
 						player.openInventory(npc.getInventoryEdit(player));
 						return true;
@@ -226,7 +109,17 @@ public class EconomyNPC extends JavaPlugin
 			{
 				if (args[0].equalsIgnoreCase("add"))
 				{
-					OfflinePlayer player = uuid.getOfflinePlayer(args[1]);
+					OfflinePlayer player = null;
+					try
+					{
+						player = Bukkit.getOfflinePlayer(UUIDFetcher.getUUIDOf(args[1]));
+					}
+					catch (Exception e)
+					{
+						sender.sendMessage("Debug: error!");
+						return false;
+					}
+					
 					if (player == null)
 					{
 						sender.sendMessage("Invalid player name.");
@@ -239,7 +132,17 @@ public class EconomyNPC extends JavaPlugin
 				}
 				else if (args[0].equalsIgnoreCase("take"))
 				{
-					OfflinePlayer player = uuid.getOfflinePlayer(args[1]);
+					OfflinePlayer player = null;
+					try
+					{
+						player = Bukkit.getOfflinePlayer(UUIDFetcher.getUUIDOf(args[1]));
+					}
+					catch (Exception e)
+					{
+						sender.sendMessage("Debug: error!");
+						return false;
+					}
+					
 					if (player == null)
 					{
 						sender.sendMessage("Invalid player name.");

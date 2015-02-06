@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.handlers.kit;
+package com.mongoosecountry.pete800.handler.kit;
 
 import java.util.UUID;
 

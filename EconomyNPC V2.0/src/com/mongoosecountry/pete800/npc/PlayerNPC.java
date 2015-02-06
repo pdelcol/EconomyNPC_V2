@@ -1,59 +1,64 @@
 package com.mongoosecountry.pete800.npc;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
+import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.handlers.blacksmith.*;
-import com.mongoosecountry.pete800.handlers.exchange.ExchangeHandler;
-import com.mongoosecountry.pete800.handlers.exchange.ExchangeTask;
-import com.mongoosecountry.pete800.handlers.kit.*;
-import com.mongoosecountry.pete800.hanlders.packet.WrapperPlayServerNamedEntitySpawn;
-import com.mongoosecountry.pete800.util.UUIDFetcher;
-import com.mongoosecountry.pete800.util.Utils;
+import com.mongoosecountry.pete800.handler.blacksmith.BlacksmithHandler;
+import com.mongoosecountry.pete800.handler.blacksmith.BlacksmithTask;
+import com.mongoosecountry.pete800.handler.exchange.ExchangeHandler;
+import com.mongoosecountry.pete800.handler.exchange.ExchangeTask;
+import com.mongoosecountry.pete800.handler.kit.KitHandler;
+import com.mongoosecountry.pete800.handler.kit.KitTask;
 
 public class PlayerNPC
 {
-	String name;
 	EconomyNPC plugin;
-	WrapperPlayServerNamedEntitySpawn spawned;
-	YamlConfiguration inv = new YamlConfiguration();
+	Villager villager;
+	ConfigurationSection inv;
 	NPCType type;
 	BlacksmithHandler blacksmith;
 	KitHandler kit;
-	ExchangeHandler exchange = new ExchangeHandler();
+	ExchangeHandler exchange;
+	String name;
+	Location location;
 	
-	public PlayerNPC(EconomyNPC npc)
+	public PlayerNPC(EconomyNPC plugin, String name, ConfigurationSection cs)
 	{
-		this("", npc, null);
+		this(plugin, NPCType.fromName(cs.getString("type")));
+		this.location = new Location(plugin.getServer().getWorld(cs.getString("world")), cs.getDouble("x"), cs.getDouble("y"), cs.getDouble("z"));
+		this.name = name;
+		if (cs.isSet("inventory"))
+			this.inv = cs.getConfigurationSection("inventory");
+		
+		if (plugin.getServer().getOnlinePlayers().size() != 0)
+			respawnNPC();
 	}
 	
-	public PlayerNPC(String name, EconomyNPC plugin, NPCType type)
+	public PlayerNPC(EconomyNPC plugin, NPCType type)
 	{
-		this.name = name;
 		this.plugin = plugin;
 		this.type = type;
 		if (this.type == NPCType.BLACKSMITH)
@@ -64,121 +69,55 @@ public class PlayerNPC
 			this.exchange = new ExchangeHandler();
 	}
 	
-	public void createNPC(Player player, String entityName, int id)
+	public void createNPC(Player player, String name)
 	{
-		spawned = new WrapperPlayServerNamedEntitySpawn();
-		spawned.setEntityId(id); 
-		spawned.setPosition(player.getLocation().toVector());
-		
-		UUID uuid = null;
-		try
-		{
-			uuid = UUIDFetcher.getUUIDOf(entityName);
-		}
-		catch (Exception e)
-		{
-			player.sendMessage(ChatColor.RED + "An error while pinging the Mojang servers.");
-			spawned = null;
-			return;
-		}
-		
-		if (uuid == null)
-		{
-			player.sendMessage(ChatColor.RED + "There is no Minecraft name that matches " + entityName);
-			spawned = null;
-			return;
-		}
-		
-		spawned.setPlayerUuid(uuid);
-		spawned.setYaw(player.getLocation().getYaw());
-		spawned.setPitch(player.getLocation().getPitch());
-		
-		WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setObject(0, (byte) 0); // Flags. Must be a byte.
-        watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
-        watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
-        spawned.setMetadata(watcher);
-        
-        Utils.broadcastPacket(spawned.getHandle());
-	}
-	
-	public void createNPC(Map<?, ?> npcData)
-	{
-		spawned = new WrapperPlayServerNamedEntitySpawn();
-		spawned.setEntityId(Integer.valueOf(npcData.get("id").toString()));
-		spawned.setPlayerUuid(UUID.fromString(npcData.get("uuid").toString()));
-		this.name = npcData.get("name").toString();
-		this.type = NPCType.fromName(npcData.get("type").toString());
-		if (type == NPCType.BLACKSMITH)
-			blacksmith = new BlacksmithHandler();
-		if (type == NPCType.KIT)
-			kit = new KitHandler();
-		
-		spawned.setPosition(new Vector(Double.valueOf(npcData.get("x").toString()), Double.valueOf(npcData.get("y").toString()), Double.valueOf(npcData.get("z").toString())));
-		spawned.setYaw(Float.valueOf(npcData.get("yaw").toString()));
-		spawned.setPitch(Float.valueOf(npcData.get("pitch").toString()));
-		
-		WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setObject(0, (byte) 0); // Flags. Must be a byte.
-        watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
-        watcher.setObject(8, (byte) 10); // Visible potion "bubbles". Zero means none.
-        spawned.setMetadata(watcher);
-        plugin.storage.entities.add(this);
-        if (this.type == NPCType.SHOP || this.type == NPCType.KIT)
-        {
-        	Map<?, ?> inventory = (Map<?, ?>) npcData.get("inventory");
-        	for (Entry<?, ?> entry : inventory.entrySet())
-            {
-            	if (!(entry.getValue() instanceof MemorySection))
-            	{
-            		int slot = Integer.valueOf(entry.getKey().toString());
-            		ItemStack item = (ItemStack) entry.getValue();
-            		if (this.type == NPCType.SHOP)
-            		{
-	            		ItemMeta meta = item.getItemMeta();
-	            		meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
-	            		item.setItemMeta(meta);
-            		}
-            		inv.set(slot + "", item);
-            	}
-            }
-        }
-        
-        Utils.broadcastPacket(spawned.getHandle());
+		this.name = name;
+		this.location = player.getLocation();
+		villager = (Villager) player.getWorld().spawnEntity(player.getLocation(), EntityType.VILLAGER);
+		villager.setCustomName(name);
+		villager.setCustomNameVisible(true);
+		villager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 6));
+		villager.setRemoveWhenFarAway(false);
+		villager.setProfession(type.getProfession());
 	}
 	
 	public void removeNPC()
 	{
-		WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setObject(0, (byte) 0); // Flags. Must be a byte.
-        watcher.setObject(6, (float) 0);
-        watcher.setObject(1, (short) 300); // Drowning counter. Must be short.
-        watcher.setObject(8, (byte) 0); // Visible potion "bubbles". Zero means none.
-        spawned.setMetadata(watcher);
-        Utils.broadcastPacket(spawned.getHandle());
+		villager.remove();
 	}
 	
-	public void resendPacket(Player p)
+	public void respawnNPC()
 	{
-		try {
-			ProtocolLibrary.getProtocolManager().sendServerPacket(p, spawned.getHandle());
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+		villager = (Villager) location.getWorld().spawnEntity(location, EntityType.VILLAGER);
+		villager.setCustomName(name);
+		villager.setCustomNameVisible(true);
+		villager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 6));
+		villager.setRemoveWhenFarAway(false);
+		villager.setProfession(type.getProfession());
+	}
+	
+	public void despawnNPC()
+	{
+		if (villager != null)
+		{
+			villager.remove();
+			villager = null;
 		}
 	}
 	
 	public Inventory getInventory(Player player)
 	{
-		Inventory inventory = Bukkit.createInventory(player, 54, name + "'s Shop");
-		for (int slot = 0; slot < inventory.getSize(); slot++)
-			inventory.setItem(slot, inv.getItemStack("" + slot));
+		Inventory inventory = Bukkit.createInventory(player, 54, villager.getCustomName() + "'s Shop");
+		if (type != NPCType.SELL)
+			for (int slot = 0; slot < inventory.getSize(); slot++)
+				inventory.setItem(slot, inv.getItemStack("" + slot));
 		
 		return inventory;
 	}
 	
 	public Inventory getInventoryEdit(Player player)
 	{
-		Inventory inventory = Bukkit.createInventory(player, 54, Bukkit.getOfflinePlayer(spawned.getPlayerUuid()).getName() + " - Edit");
+		Inventory inventory = Bukkit.createInventory(player, 54, villager.getCustomName() + " - Edit");
 		for (int slot = 0; slot < inventory.getSize(); slot++)
 			inventory.setItem(slot, inv.getItemStack("" + slot));
 		
@@ -225,7 +164,6 @@ public class PlayerNPC
 			}
 			if(damage > 0)
 			{
-				
 				if(blacksmith.getPlayerName().equalsIgnoreCase("")){
 					double cost = damage * costPerDamage;
 					if(multiplyer > 0){
@@ -282,12 +220,11 @@ public class PlayerNPC
 		}
 		else if (NPCType.XP == this.type)
 		{
+			double money = plugin.getConfig().getDouble("tokenExchange", 2000);
 			if(exchange.getPlayerName() != null && exchange.getPlayerName() == player.getUniqueId())
 			{
 				if (plugin.tokens.removeTokens(player.getUniqueId(), 1))
 				{
-					//Change as necessary for now.
-					double money = 2000.0;
 					OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
 					plugin.econ.depositPlayer(p, money);
 					player.sendMessage(ChatColor.GOLD + "You have traded 1 token for $" + money + ".");
@@ -295,7 +232,7 @@ public class PlayerNPC
 				else
 					player.sendMessage(ChatColor.RED + "You do not have enough tokens for that");
 			}else{
-				player.sendMessage(ChatColor.BLUE + "You are about to exchange 1 token for $2000");
+				player.sendMessage(ChatColor.BLUE + "You are about to exchange 1 token for $" + money);
 				player.sendMessage(ChatColor.BLUE + "Right click again to continue");
 				this.exchange.setPlayerName(player.getUniqueId());
 				@SuppressWarnings("unused")
@@ -304,7 +241,7 @@ public class PlayerNPC
 		}
 		else if (NPCType.KIT == this.type)
 		{
-			if ((kit.getPlayer() == null || !kit.getPlayer().equals(player.getUniqueId())) && (kit.getNpcName() == null || !kit.getNpcName().equals(this.name)))
+			if ((kit.getPlayer() == null || !kit.getPlayer().equals(player.getUniqueId())) && (kit.getNpcName() == null || !kit.getNpcName().equals(villager.getCustomName())))
 			{
 				if (getInventory(player).getItem(getInventory(player).getSize() - 1) == null || getInventory(player).getItem(getInventory(player).getSize() - 1).getType() != Material.COAL)
 				{
@@ -314,15 +251,15 @@ public class PlayerNPC
 				{
 					ItemStack item = getInventory(player).getItem(getInventory(player).getSize()-1);
 					int numTokens = item.getAmount();
-					player.sendMessage(ChatColor.GOLD + "Do you really want to sell " + numTokens + " tokens for this kit?");
-					kit.setNpcName(this.name);
+					player.sendMessage(ChatColor.GOLD + "Do you really want to spend " + numTokens + " tokens for this kit?");
+					kit.setNpcName(villager.getCustomName());
 					kit.setNumTokens(numTokens);
 					kit.setPlayer(player.getUniqueId());
 					@SuppressWarnings("unused")
 					BukkitTask task = new KitTask(this.plugin, kit).runTaskLater(this.plugin, 100);
 				}
 			}
-			else if(kit.getPlayer().equals(player.getUniqueId()) && kit.getNpcName().equals(this.name))
+			else if(kit.getPlayer().equals(player.getUniqueId()) && kit.getNpcName().equals(villager.getCustomName()))
 			{
 				if(plugin.tokens.removeTokens(player.getUniqueId(), kit.getNumTokens()))
 				{ 
@@ -367,30 +304,56 @@ public class PlayerNPC
 		return type;
 	}
 	
-	public WrapperPlayServerNamedEntitySpawn getEntityData()
+	public Villager getVillager()
 	{
-		return spawned;
+		return villager;
 	}
 	
-	public YamlConfiguration getInventory()
+	public ConfigurationSection getInventory()
 	{
 		return inv;
+	}
+	
+	public ConfigurationSection save()
+	{
+		ConfigurationSection cs = new YamlConfiguration();
+		cs.set("type", type.toString());
+		cs.set("world", location.getWorld().getName());
+		cs.set("x", location.getX());
+		cs.set("y", location.getY());
+		cs.set("z", location.getZ());
+		if (inv != null)
+			cs.set("inventory", inv);
+		
+		return cs;
 	}
 	
 	public static enum NPCType
 	{
 		// Gambling NPC
-		BETTING,
+		BETTING(Profession.FARMER),
 		// Repair tools/armor
-		BLACKSMITH,
+		BLACKSMITH(Profession.BLACKSMITH),
 		// Buy kits
-		KIT,
+		KIT(Profession.LIBRARIAN),
 		// Standard shop
-		SHOP,
+		SHOP(Profession.PRIEST),
 		// Sell items to the NPC
-		SELL,
+		SELL(Profession.PRIEST),
 		// Exchange tokens for XP/Money
-		XP;
+		XP(Profession.BUTCHER);
+		
+		Profession profession;
+		
+		private NPCType(Profession profession)
+		{
+			this.profession = profession; 
+		}
+		
+		public Profession getProfession()
+		{
+			return profession;
+		}
 		
 		public static NPCType fromName(String name)
 		{

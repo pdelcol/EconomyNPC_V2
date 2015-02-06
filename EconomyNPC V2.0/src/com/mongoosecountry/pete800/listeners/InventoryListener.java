@@ -49,7 +49,7 @@ public class InventoryListener implements Listener
 		
 		if (npc.getType() == NPCType.SHOP)
 		{
-			if (slot < 27 && slot > -1)
+			if (slot < shop.getSize() - 1 && slot > -1)
 			{
 				if (event.getAction() == InventoryAction.PICKUP_ALL)
 				{
@@ -94,7 +94,7 @@ public class InventoryListener implements Listener
 					public void run()
 					{
 						player.closeInventory();
-						player.sendMessage(ChatColor.GOLD + "Invalid inventory! Click on the shop's inventory.");
+						player.sendMessage(ChatColor.GOLD + "Invalid inventory! Please click on the shop's inventory.");
 					}
 				}, 1L);
 			}
@@ -132,7 +132,7 @@ public class InventoryListener implements Listener
 			}
 			
 			plugin.econ.depositPlayer(p, sell);
-			player.sendMessage("You have sold items for a total amount of $" + sell + ".");
+			player.sendMessage("You have sold items for a total amount of $" + sell);
 			if (items.size() > 0)
 			{
 				player.sendMessage("Some items could not be sold. They have been returned back to you.");

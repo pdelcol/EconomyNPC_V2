@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.hanlders;
+package com.mongoosecountry.pete800.hanlder.tokens;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,7 @@ import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.mongoosecountry.pete800.EconomyNPC;
+import com.mongoosecountry.pete800.util.NameFetcher;
 
 public class TokenHandler
 {
@@ -50,8 +51,13 @@ public class TokenHandler
 		}
 		
 		for (Entry<String, Object> entry : tokenYml.getValues(true).entrySet())
-			if (!(entry.getValue() instanceof MemorySection))
-				tokens.put(UUID.fromString(entry.getKey()), Integer.valueOf(entry.getValue().toString()));
+		{
+			if (entry.getValue() instanceof MemorySection)
+			{
+				MemorySection data = (MemorySection) entry.getValue();
+				tokens.put(UUID.fromString(entry.getKey()), data.getInt("tokens"));
+			}
+		}
 	}
 	
 	//Save the tokens
@@ -72,8 +78,13 @@ public class TokenHandler
 		try
 		{
 			tokenYml.load(tokenFile);
-			for (Entry<UUID, Integer> entry : tokens.entrySet())
-				tokenYml.set(entry.getKey().toString(), entry.getValue());
+			for (UUID uuid : tokens.keySet())
+			{
+				YamlConfiguration data = new YamlConfiguration();
+				data.set("name", NameFetcher.getNameOf(uuid));
+				data.set("tokens", tokens.get(uuid));
+				tokenYml.set(uuid.toString(), data);
+			}
 			
 			tokenYml.save(tokenFile);
 		}
