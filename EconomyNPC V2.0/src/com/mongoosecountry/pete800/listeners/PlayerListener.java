@@ -1,6 +1,7 @@
 package com.mongoosecountry.pete800.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -57,6 +58,9 @@ public class PlayerListener implements Listener
 	public void onEntityInteraction(PlayerInteractEntityEvent event)
 	{
 		Player player = event.getPlayer();
+		if (event.getRightClicked().getType() != EntityType.VILLAGER)
+			return;
+		
 		Villager villager = (Villager) event.getRightClicked();
 		for (PlayerNPC npc : plugin.storage.getNPCs())
 		{

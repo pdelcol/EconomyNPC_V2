@@ -67,6 +67,9 @@ public class PlayerNPC
 			this.kit = new KitHandler();
 		if(this.type == NPCType.XP)
 			this.exchange = new ExchangeHandler();
+		
+		if (this.type == NPCType.KIT || this.type == NPCType.SHOP)
+			inv = new YamlConfiguration();
 	}
 	
 	public void createNPC(Player player, String name)
