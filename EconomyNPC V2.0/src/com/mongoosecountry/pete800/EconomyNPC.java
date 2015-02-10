@@ -1,27 +1,30 @@
 package com.mongoosecountry.pete800;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 import net.milkbowl.vault.economy.Economy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.mongoosecountry.pete800.command.AbstractCommand;
+import com.mongoosecountry.pete800.command.NPCEdit;
+import com.mongoosecountry.pete800.command.NPCRemove;
+import com.mongoosecountry.pete800.command.NPCSpawn;
+import com.mongoosecountry.pete800.command.Tokens;
 import com.mongoosecountry.pete800.hanlder.tokens.TokenHandler;
 import com.mongoosecountry.pete800.listeners.EntityListener;
 import com.mongoosecountry.pete800.listeners.InventoryListener;
 import com.mongoosecountry.pete800.listeners.PlayerListener;
 import com.mongoosecountry.pete800.npc.EntityStorage;
-import com.mongoosecountry.pete800.npc.PlayerNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
 import com.mongoosecountry.pete800.util.Prices;
-import com.mongoosecountry.pete800.util.UUIDFetcher;
 
 public class EconomyNPC extends JavaPlugin
 {
@@ -30,7 +33,9 @@ public class EconomyNPC extends JavaPlugin
 	public Logger log;
 	public Prices prices;
 	public TokenHandler tokens;
+	private List<AbstractCommand> commands; 
 	
+	@Override
 	public void onEnable()
 	{
 		saveDefaultConfig();
@@ -47,6 +52,8 @@ public class EconomyNPC extends JavaPlugin
 			return;
 		}
 		
+		commands = Arrays.asList(new NPCEdit(this), new NPCSpawn(this), new NPCRemove(this), new Tokens(this));
+		
 		getServer().getPluginManager().registerEvents(new EntityListener(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 		getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
@@ -54,6 +61,7 @@ public class EconomyNPC extends JavaPlugin
 		log.info("EconomyNPC is enabled!");
 	}
 	
+	@Override
 	public void onDisable()
 	{
 		tokens.save();
@@ -61,110 +69,80 @@ public class EconomyNPC extends JavaPlugin
 		log.info("EconomyNPC is disabled!");
 	}
 	
+	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
-		if (!sender.hasPermission("npc.commands"))
+		if (cmd.getName().equalsIgnoreCase("npc"))
 		{
-			sender.sendMessage(ChatColor.RED + "You do not have permission for this command.");
-			return false;
-		}
-		
-		if(cmd.getName().equalsIgnoreCase("npcspawn") && args.length == 2)
-		{
-			if(sender instanceof Player)
+			if (args.length > 0)
+				for (AbstractCommand command : commands)
+					if (command.getName().equalsIgnoreCase(args[0]))
+						return command.onCommand(sender, moveArguments(args));
+			
+			List<String> help = new ArrayList<String>();
+			String goldUnderline = ChatColor.GOLD + "" + ChatColor.UNDERLINE;
+			help.add(goldUnderline + "EconomyNPC v2.0" + ChatColor.RESET + " by " + goldUnderline + "Bruce" + ChatColor.RESET + " & " + goldUnderline + "Pete");
+			for (AbstractCommand command : commands)
 			{
-				Player player = (Player) sender;
-				storage.createNPC(args[1], player, NPCType.fromName(args[0]));
-				return true;
-			}
-		}
-		
-		if(cmd.getName().equalsIgnoreCase("npcremove") && args.length == 1)
-		{
-			if(sender instanceof Player)
-			{
-				return storage.removeNPC(args[0], (Player) sender);
-			}
-		}
-		
-		if (cmd.getName().equalsIgnoreCase("npcedit") && args.length == 1)
-		{
-			if (sender instanceof Player)
-			{
-				Player player = (Player) sender;
-				for (PlayerNPC npc : storage.getNPCs())
-				{
-					if (npc.getVillager().getCustomName().equals(args[0]))
-					{
-						player.openInventory(npc.getInventoryEdit(player));
-						return true;
-					}
-				}
-			}
-		}
-		
-		if (cmd.getName().equalsIgnoreCase("tokens"))
-		{
-			if (args.length == 3)
-			{
-				if (args[0].equalsIgnoreCase("add"))
-				{
-					OfflinePlayer player = null;
-					try
-					{
-						player = Bukkit.getOfflinePlayer(UUIDFetcher.getUUIDOf(args[1]));
-					}
-					catch (Exception e)
-					{
-						sender.sendMessage("Debug: error!");
-						return false;
-					}
-					
-					if (player == null)
-					{
-						sender.sendMessage("Invalid player name.");
-						return false;
-					}
-					
-					tokens.addTokens(player.getUniqueId(), Integer.valueOf(args[2]));
-					sender.sendMessage("Tokens added.");
-					return true;
-				}
-				else if (args[0].equalsIgnoreCase("take"))
-				{
-					OfflinePlayer player = null;
-					try
-					{
-						player = Bukkit.getOfflinePlayer(UUIDFetcher.getUUIDOf(args[1]));
-					}
-					catch (Exception e)
-					{
-						sender.sendMessage("Debug: error!");
-						return false;
-					}
-					
-					if (player == null)
-					{
-						sender.sendMessage("Invalid player name.");
-						return false;
-					}
-					
-					tokens.addTokens(player.getUniqueId(), Integer.valueOf(args[2]));
-					sender.sendMessage("Tokens removed.");
-					return true;
-				}
+				help.add(command.getUsage() + ChatColor.DARK_PURPLE + command.getDescription());
+				for (AbstractCommand subCommand : command.getSubCommands())
+					help.add(subCommand.getUsage() + ChatColor.DARK_PURPLE + subCommand.getDescription());
 			}
 			
-			if (sender instanceof Player && sender.hasPermission("npc.tokens"))
-			{
-				sender.sendMessage(ChatColor.GOLD + "You have " + tokens.getNumTokens(((Player) sender).getUniqueId()) + " tokens.");
-				return true;
-			}
+			for (String line : help)
+				sender.sendMessage(line);
+			
+			return true;
 		}
 		
 		return false;
 	}
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args)
+	{
+		if (cmd.getName().equalsIgnoreCase("npc"))
+		{
+			List<String> names = new ArrayList<String>();
+			for (AbstractCommand command : commands)
+			{
+				if (args.length == 1 && (args[0].equals("") || command.getName().toLowerCase().startsWith(args[0].toLowerCase())))
+					names.add(command.getName());
+				else if (args.length == 2 && args[0].equalsIgnoreCase(command.getName()))
+					return command.onTabComplete(sender, moveArguments(args));
+				else if (args.length == 3)
+					return null;
+			}
+			
+			return names;
+		}
+		
+		return null;
+	}
+	
+	/* Might need to create a utility class for future utility methods */
+	public String[] moveArguments(String[] args)
+	{
+		List<String> list = new ArrayList<String>();
+		Collections.addAll(list, args);
+		list.remove(0);
+		return list.toArray(new String[0]);
+	}
 
+	public boolean isNumber(String string)
+	{
+		try
+		{
+			Integer.valueOf(string);
+		}
+		catch (NumberFormatException e)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
 	private boolean setupEconomy()
 	{
 		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);

@@ -55,7 +55,7 @@ public class InventoryListener implements Listener
 				{
 					OfflinePlayer p = plugin.getServer().getOfflinePlayer(player.getUniqueId());
 					Material material = clicked.getType();
-					double price = plugin.prices.getPrice(clicked);
+					double price = plugin.prices.getBuyPrice(clicked);
 					if (plugin.econ.withdrawPlayer(p, price).transactionSuccess())
 					{
 						event.getCursor().setType(Material.AIR);
@@ -64,7 +64,7 @@ public class InventoryListener implements Listener
 						event.setResult(Result.DENY);
 						player.closeInventory();
 						player.getInventory().addItem(new ItemStack(clicked.getType(), clicked.getAmount(), clicked.getDurability()));
-						player.sendMessage("You bought " + material.toString() + " for $" + price + ".");
+						player.sendMessage(ChatColor.AQUA + "You bought " + ChatColor.RESET + material.toString() + ChatColor.AQUA + " for " + ChatColor.RESET + "$" + price);
 					}
 					else
 					{
@@ -124,18 +124,18 @@ public class InventoryListener implements Listener
 			{
 				if (item != null)
 				{
-					if (plugin.prices.getPrice(item) > 0)
-						sell += plugin.prices.getPrice(item);
+					if (plugin.prices.getSellPrice(item) > 0)
+						sell += plugin.prices.getSellPrice(item);
 					else
 						items.add(item);
 				}
 			}
 			
 			plugin.econ.depositPlayer(p, sell);
-			player.sendMessage("You have sold items for a total amount of $" + sell);
+			player.sendMessage(ChatColor.AQUA + "You have sold items for a total amount of " + ChatColor.WHITE + "$" + sell);
 			if (items.size() > 0)
 			{
-				player.sendMessage("Some items could not be sold. They have been returned back to you.");
+				player.sendMessage(ChatColor.DARK_RED + "Some items could not be sold. They have been returned back to you.");
 				for (ItemStack item : items)
 					player.getInventory().addItem(item);
 			}
@@ -143,7 +143,7 @@ public class InventoryListener implements Listener
 		else if ((npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT) && inv.getName().contains(" - Edit"))
 		{
 			npc.updateInventory(inv);
-			player.sendMessage("Shop updated.");
+			player.sendMessage(ChatColor.GREEN + "Shop updated.");
 		}
 	}
 }

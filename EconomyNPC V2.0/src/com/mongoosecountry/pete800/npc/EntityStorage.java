@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -40,41 +41,29 @@ public class EntityStorage
 			entities.add(new PlayerNPC(plugin, name, npcs.getConfigurationSection("npc." + name)));
 	}
 	
-	public boolean createNPC(String npcName, Player player, NPCType type)
+	public boolean createNPC(String name, Player player, NPCType type)
 	{
 		for(PlayerNPC npc : entities)
 		{
-			if(npc.getVillager().getCustomName().equalsIgnoreCase(npcName))
+			if(npc.getVillager().getCustomName().equalsIgnoreCase(name))
 			{
 				player.sendMessage(ChatColor.RED + "You cannot create an NPC with that name. Try a different name");
 				return false;
 			}
 		}
 		
-		PlayerNPC npc = new PlayerNPC(plugin, type);
-		try
-		{
-			npc.createNPC(player, npcName);
-		}
-		catch (NullPointerException e)
-		{
-			e.printStackTrace();
-			player.sendMessage("Debug: error!");
-			return false;
-		}
-		
-		entities.add(npc);
+		entities.add(new PlayerNPC(plugin, type, player.getLocation(), name));
 		player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Success!");
 		return true;
 	}
 	
-	public boolean removeNPC(String npcName, Player player)
+	public boolean removeNPC(String name, CommandSender sender)
 	{
 		boolean exists = false;
 		int removeNum = Integer.MAX_VALUE;
 		for(int x = 0; x < entities.size(); x++)
 		{
-			if(entities.get(x).getVillager().getCustomName().equalsIgnoreCase(npcName))
+			if(entities.get(x).getVillager().getCustomName().equalsIgnoreCase(name))
 			{
 				removeNum = x;
 				exists = true;
@@ -83,14 +72,14 @@ public class EntityStorage
 		
 		if(exists && removeNum != Integer.MAX_VALUE)
 		{
-			entities.get(removeNum).removeNPC();
+			entities.get(removeNum).despawnNPC();
 			entities.remove(removeNum);
-			player.sendMessage("Debug: success!");
+			sender.sendMessage(ChatColor.GREEN + "NPC removed.");
 			return true;
 		}
 		else
 		{
-			player.sendMessage("Debug: error!");
+			sender.sendMessage(ChatColor.DARK_RED + "There is no NPC with that name.");
 			return false;
 		}
 	}

@@ -17,13 +17,13 @@ import com.mongoosecountry.pete800.EconomyNPC;
 
 public class Prices
 {
-	EconomyNPC npc;
+	EconomyNPC plugin;
 	Map<ItemStack, Double> prices = new HashMap<ItemStack, Double>();
 	
-	public Prices(EconomyNPC npc)
+	public Prices(EconomyNPC plugin)
 	{
-		this.npc = npc;
-		File pricesFile = new File(npc.getDataFolder(), "prices.yml");
+		this.plugin = plugin;
+		File pricesFile = new File(plugin.getDataFolder(), "prices.yml");
 		if (!pricesFile.exists())
 		{
 			try
@@ -43,18 +43,18 @@ public class Prices
 		}
 		catch (FileNotFoundException e)
 		{
-			npc.log.warning("Error, prices.yml is missing.");
-			npc.getServer().getPluginManager().disablePlugin(npc);
+			plugin.log.warning("Error, prices.yml is missing.");
+			plugin.getServer().getPluginManager().disablePlugin(plugin);
 		}
 		catch (IOException e)
 		{
-			npc.log.warning("Error loading prices.yml");
-			npc.getServer().getPluginManager().disablePlugin(npc);
+			plugin.log.warning("Error loading prices.yml");
+			plugin.getServer().getPluginManager().disablePlugin(plugin);
 		}
 		catch (InvalidConfigurationException e)
 		{
-			npc.log.warning("Error, invalid format in prices.yml");
-			npc.getServer().getPluginManager().disablePlugin(npc);
+			plugin.log.warning("Error, invalid format in prices.yml");
+			plugin.getServer().getPluginManager().disablePlugin(plugin);
 		}
 		
 		for (Entry<String, Object> entry : priceConfig.getValues(true).entrySet())
@@ -70,7 +70,7 @@ public class Prices
 		}
 	}
 	
-	public double getPrice(ItemStack item)
+	public double getBuyPrice(ItemStack item)
 	{
 		double price = 0.0;
 		ItemStack is = new ItemStack(item.getType(), 0, item.getDurability());
@@ -78,5 +78,10 @@ public class Prices
 			price = prices.get(is) * item.getAmount();
 		
 		return price;
+	}
+	
+	public double getSellPrice(ItemStack item)
+	{
+		return getBuyPrice(item) * plugin.getConfig().getDouble("sellBackPercentage", 0.75);
 	}
 }

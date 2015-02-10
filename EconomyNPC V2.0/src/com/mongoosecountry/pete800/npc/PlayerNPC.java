@@ -47,9 +47,7 @@ public class PlayerNPC
 	
 	public PlayerNPC(EconomyNPC plugin, String name, ConfigurationSection cs)
 	{
-		this(plugin, NPCType.fromName(cs.getString("type")));
-		this.location = new Location(plugin.getServer().getWorld(cs.getString("world")), cs.getDouble("x"), cs.getDouble("y"), cs.getDouble("z"));
-		this.name = name;
+		this(plugin, NPCType.fromName(cs.getString("type")), new Location(plugin.getServer().getWorld(cs.getString("world")), cs.getDouble("x"), cs.getDouble("y"), cs.getDouble("z")), name);
 		if (cs.isSet("inventory"))
 			this.inv = cs.getConfigurationSection("inventory");
 		
@@ -57,10 +55,15 @@ public class PlayerNPC
 			respawnNPC();
 	}
 	
-	public PlayerNPC(EconomyNPC plugin, NPCType type)
+	public PlayerNPC(EconomyNPC plugin, NPCType type, Location location, String name)
 	{
 		this.plugin = plugin;
 		this.type = type;
+		this.name = name;
+		this.location = location;
+		if (plugin.getServer().getOnlinePlayers().size() != 0)
+			respawnNPC();
+		
 		if (this.type == NPCType.BLACKSMITH)
 			this.blacksmith = new BlacksmithHandler();
 		if(this.type == NPCType.KIT)
@@ -70,23 +73,6 @@ public class PlayerNPC
 		
 		if (this.type == NPCType.KIT || this.type == NPCType.SHOP)
 			inv = new YamlConfiguration();
-	}
-	
-	public void createNPC(Player player, String name)
-	{
-		this.name = name;
-		this.location = player.getLocation();
-		villager = (Villager) player.getWorld().spawnEntity(player.getLocation(), EntityType.VILLAGER);
-		villager.setCustomName(name);
-		villager.setCustomNameVisible(true);
-		villager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 6));
-		villager.setRemoveWhenFarAway(false);
-		villager.setProfession(type.getProfession());
-	}
-	
-	public void removeNPC()
-	{
-		villager.remove();
 	}
 	
 	public void respawnNPC()
@@ -101,11 +87,11 @@ public class PlayerNPC
 	
 	public void despawnNPC()
 	{
-		if (villager != null)
-		{
-			villager.remove();
-			villager = null;
-		}
+		if (villager == null)
+			return;
+		
+		villager.remove();
+		villager = null;
 	}
 	
 	public Inventory getInventory(Player player)
@@ -138,7 +124,7 @@ public class PlayerNPC
 				if (type == NPCType.SHOP)
 				{
 					ItemMeta meta = item.getItemMeta();
-					meta.setLore(Arrays.asList("$" + plugin.prices.getPrice(item)));
+					meta.setLore(Arrays.asList("$" + plugin.prices.getBuyPrice(item)));
 					item.setItemMeta(meta);
 				}
 				
@@ -246,15 +232,24 @@ public class PlayerNPC
 		{
 			if ((kit.getPlayer() == null || !kit.getPlayer().equals(player.getUniqueId())) && (kit.getNpcName() == null || !kit.getNpcName().equals(villager.getCustomName())))
 			{
-				if (getInventory(player).getItem(getInventory(player).getSize() - 1) == null || getInventory(player).getItem(getInventory(player).getSize() - 1).getType() != Material.COAL)
+				Inventory inv = getInventory(player);
+				if (inv.getItem(inv.getSize() - 1) == null || inv.getItem(inv.getSize() - 1).getType() != Material.COAL)
 				{
-					player.sendMessage("This NPC is not ready for player interaction. :(");
+					player.sendMessage(ChatColor.DARK_RED + "This NPC is not ready for player interaction. :(");
 				}
-				else if(getInventory(player).getItem(getInventory(player).getSize()-1).getType() == Material.COAL)
+				else if(inv.getItem(inv.getSize()-1).getType() == Material.COAL)
 				{
-					ItemStack item = getInventory(player).getItem(getInventory(player).getSize()-1);
-					int numTokens = item.getAmount();
+					int numTokens = inv.getItem(inv.getSize() - 1).getAmount();
 					player.sendMessage(ChatColor.GOLD + "Do you really want to spend " + numTokens + " tokens for this kit?");
+					for (int x = 0; x < getInventory(player).getSize() - 1; x++)
+					{
+						if (inv.getItem(x) != null)
+						{
+							ItemStack item = inv.getItem(x);
+							player.sendMessage(ChatColor.AQUA + item.getType().toString() + ":" + item.getDurability() + ChatColor.WHITE + " x " + ChatColor.AQUA + item.getAmount());
+						}
+					}
+					
 					kit.setNpcName(villager.getCustomName());
 					kit.setNumTokens(numTokens);
 					kit.setPlayer(player.getUniqueId());
@@ -285,7 +280,7 @@ public class PlayerNPC
 					
 					if(dropped)
 					{
-						player.sendMessage("Your inventory was full so some items were dropped at your feet");
+						player.sendMessage(ChatColor.GREEN + "Your inventory was full so some items were dropped at your feet");
 					}
 					player.sendMessage(ChatColor.GREEN + "You exchanged " + kit.getNumTokens() + " tokens for a kit!");
 					
@@ -299,6 +294,7 @@ public class PlayerNPC
 		else if(NPCType.BETTING == this.type)
 		{
 			//I'm going to offload this code to another class because it might be a lot of code
+			player.sendMessage(ChatColor.RED + "Which dummeh spawned me? I'm not even implemented yet.");
 		}
 	}
 	
@@ -310,6 +306,14 @@ public class PlayerNPC
 	public Villager getVillager()
 	{
 		return villager;
+	}
+	
+	public String getName()
+	{
+		if (villager != null)
+			return villager.getCustomName();
+		
+		return name;
 	}
 	
 	public ConfigurationSection getInventory()
