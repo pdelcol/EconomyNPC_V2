@@ -11,11 +11,13 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Villager.Profession;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.mongoosecountry.pete800.command.AbstractCommand;
 import com.mongoosecountry.pete800.command.NPCEdit;
+import com.mongoosecountry.pete800.command.NPCProfession;
 import com.mongoosecountry.pete800.command.NPCRemove;
 import com.mongoosecountry.pete800.command.NPCSpawn;
 import com.mongoosecountry.pete800.command.Tokens;
@@ -52,7 +54,7 @@ public class EconomyNPC extends JavaPlugin
 			return;
 		}
 		
-		commands = Arrays.asList(new NPCEdit(this), new NPCSpawn(this), new NPCRemove(this), new Tokens(this));
+		commands = Arrays.asList(new NPCEdit(this), new NPCProfession(this), new NPCRemove(this), new NPCSpawn(this), new Tokens(this));
 		
 		getServer().getPluginManager().registerEvents(new EntityListener(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
@@ -79,18 +81,15 @@ public class EconomyNPC extends JavaPlugin
 					if (command.getName().equalsIgnoreCase(args[0]))
 						return command.onCommand(sender, moveArguments(args));
 			
-			List<String> help = new ArrayList<String>();
 			String goldUnderline = ChatColor.GOLD + "" + ChatColor.UNDERLINE;
-			help.add(goldUnderline + "EconomyNPC v2.0" + ChatColor.RESET + " by " + goldUnderline + "Bruce" + ChatColor.RESET + " & " + goldUnderline + "Pete");
+			sender.sendMessage(goldUnderline + "EconomyNPC v2.0" + ChatColor.RESET + " by " + goldUnderline + "Bruce" + ChatColor.RESET + " & " + goldUnderline + "Pete");
 			for (AbstractCommand command : commands)
 			{
-				help.add(command.getUsage() + ChatColor.DARK_PURPLE + command.getDescription());
-				for (AbstractCommand subCommand : command.getSubCommands())
-					help.add(subCommand.getUsage() + ChatColor.DARK_PURPLE + subCommand.getDescription());
+				sender.sendMessage(command.getUsage() + ChatColor.GREEN + " " + command.getDescription());
+				if (command.getSubCommands() != null)
+					for (AbstractCommand subCommand : command.getSubCommands())
+						sender.sendMessage(subCommand.getUsage() + ChatColor.GREEN + " " + subCommand.getDescription());
 			}
-			
-			for (String line : help)
-				sender.sendMessage(line);
 			
 			return true;
 		}
@@ -98,26 +97,14 @@ public class EconomyNPC extends JavaPlugin
 		return false;
 	}
 	
-	@Override
-	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args)
+	private boolean setupEconomy()
 	{
-		if (cmd.getName().equalsIgnoreCase("npc"))
-		{
-			List<String> names = new ArrayList<String>();
-			for (AbstractCommand command : commands)
-			{
-				if (args.length == 1 && (args[0].equals("") || command.getName().toLowerCase().startsWith(args[0].toLowerCase())))
-					names.add(command.getName());
-				else if (args.length == 2 && args[0].equalsIgnoreCase(command.getName()))
-					return command.onTabComplete(sender, moveArguments(args));
-				else if (args.length == 3)
-					return null;
-			}
-			
-			return names;
-		}
-		
-		return null;
+		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+		if (rsp == null)
+			return false;
+
+		econ = rsp.getProvider();
+		return econ != null;
 	}
 	
 	/* Might need to create a utility class for future utility methods */
@@ -143,13 +130,12 @@ public class EconomyNPC extends JavaPlugin
 		return true;
 	}
 	
-	private boolean setupEconomy()
+	public Profession getProfessionFromName(String name)
 	{
-		RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		if (rsp == null)
-			return false;
-
-		econ = rsp.getProvider();
-		return econ != null;
+		for (Profession profession : Profession.values())
+			if (profession.toString().equalsIgnoreCase(name))
+				return profession;
+		
+		return null;
 	}
 }

@@ -1,8 +1,6 @@
 package com.mongoosecountry.pete800.command;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -25,7 +23,7 @@ public class NPCEdit extends AbstractCommand
 		if (!canSenderUseCommand(sender))
 			return false;
 		
-		if (args.length == 1)
+		if (args.length > 1)
 		{
 			PlayerNPC npc = plugin.storage.getNPC(args[0]);
 			if (npc == null)
@@ -46,16 +44,5 @@ public class NPCEdit extends AbstractCommand
 		
 		sender.sendMessage(ChatColor.DARK_RED + "Not enough arguments: " + getUsage());
 		return false;
-	}
-	
-	@Override
-	public List<String> onTabComplete(CommandSender sender, String[] args)
-	{
-		List<String> names = new ArrayList<String>();
-		for (PlayerNPC npc : plugin.storage.getNPCs())
-			if (args[0].equals("") || args[0].toLowerCase().startsWith(npc.getName().toLowerCase()))
-				names.add(npc.getName());
-		
-		return names;
 	}
 }

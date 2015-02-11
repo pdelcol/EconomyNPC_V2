@@ -64,7 +64,7 @@ public class Prices
 				String material = entry.getKey().split("\\.")[0].toUpperCase();
 				short durability = Short.valueOf(entry.getKey().split("\\.")[1]);
 				ItemStack item = new ItemStack(Material.getMaterial(material), 0, durability);
-				double price = Short.valueOf(entry.getValue().toString());
+				double price = Double.valueOf(entry.getValue().toString());
 				prices.put(item, price);
 			}
 		}

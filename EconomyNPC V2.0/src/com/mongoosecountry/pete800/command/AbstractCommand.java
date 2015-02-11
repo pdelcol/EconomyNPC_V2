@@ -61,8 +61,6 @@ public abstract class AbstractCommand
 	
 	public abstract boolean onCommand(CommandSender sender, String[] args);
 	
-	public abstract List<String> onTabComplete(CommandSender sender, String[] args);
-	
 	public boolean canSenderUseCommand(CommandSender sender)
 	{
 		if (isPlayerOnly && !(sender instanceof Player))

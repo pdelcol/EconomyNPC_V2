@@ -24,25 +24,32 @@ public class NPCSpawn extends AbstractCommand
 		if (!canSenderUseCommand(sender))
 			return false;
 		
-		if (args.length == 2)
-			return plugin.storage.createNPC(args[1], (Player) sender, NPCType.fromName(args[0]));
+		if (args.length > 2)
+		{
+			NPCType type = NPCType.fromName(args[0]);
+			if (type == null)
+			{
+				List<String> names = new ArrayList<String>();
+				for (NPCType npct : NPCType.values())
+					names.add(npct.toString());
+				
+				StringBuilder sb = new StringBuilder();
+				for (String name : names)
+				{
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append(name);
+				}
+				
+				sender.sendMessage(ChatColor.DARK_RED + "Invalid NPC type. Expected: " + sb.toString());
+				return false;
+			}
+			
+			return plugin.storage.createNPC(args[1], (Player) sender, type);
+		}
 		
 		sender.sendMessage(ChatColor.DARK_RED + "Not enough arguments: " + getUsage());
 		return false;
-	}
-	
-	@Override
-	public List<String> onTabComplete(CommandSender sender, String[] args)
-	{
-		List<String> names = new ArrayList<String>();
-		for (NPCType npcType : NPCType.values())
-		{
-			if (args.length == 1 && (args[0].equals("") || args[0].toLowerCase().startsWith(npcType.toString().toLowerCase())))
-				names.add(npcType.toString());
-			else
-				return null;
-		}
-		
-		return names;
 	}
 }

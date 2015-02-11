@@ -1,8 +1,6 @@
 package com.mongoosecountry.pete800.command;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -30,16 +28,5 @@ public class Tokens extends AbstractCommand
 		
 		sender.sendMessage(ChatColor.GOLD + "You have " + ChatColor.GREEN + plugin.tokens.getNumTokens(((Player) sender).getUniqueId()) + ChatColor.GOLD + " tokens.");
 		return true;
-	}
-	
-	@Override
-	public List<String> onTabComplete(CommandSender sender, String[] args)
-	{
-		List<String> names = new ArrayList<String>();
-		for (AbstractCommand command : getSubCommands())
-			if (args[0].equals("") || args[0].toLowerCase().startsWith(command.getName().toLowerCase()))
-				names.add(command.getName());
-		
-		return names;
 	}
 }

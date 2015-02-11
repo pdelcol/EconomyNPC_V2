@@ -1,5 +1,6 @@
 package com.mongoosecountry.pete800.listeners;
 
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,6 +22,9 @@ public class EntityListener implements Listener
 	@EventHandler
 	public void onEntityDamage(EntityDamageByEntityEvent event)
 	{
+		if (event.getEntityType() != EntityType.VILLAGER)
+			return;
+		
 		Villager villager = (Villager) event.getEntity();
 		for (PlayerNPC npc : plugin.storage.getNPCs())
 		{
@@ -35,8 +39,11 @@ public class EntityListener implements Listener
 	@EventHandler
 	public void onEntityTarget(EntityTargetLivingEntityEvent event)
 	{
+		if (event.getTarget() == null)
+			return;
+		
 		for (PlayerNPC npc : plugin.storage.getNPCs())
-			if (event.getTarget().getUniqueId() == npc.getVillager().getUniqueId())
+			if (npc.getVillager() != null && event.getTarget().getUniqueId() == npc.getVillager().getUniqueId())
 				event.setTarget(null);
 	}
 }

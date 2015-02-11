@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.betting;
+package com.mongoosecountry.pete800.handler.betting;
 
 import java.util.HashMap;
 import java.util.Set;

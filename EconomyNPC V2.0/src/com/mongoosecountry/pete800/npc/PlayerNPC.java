@@ -1,7 +1,14 @@
 package com.mongoosecountry.pete800.npc;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import net.milkbowl.vault.economy.Economy;
@@ -44,15 +51,15 @@ public class PlayerNPC
 	ExchangeHandler exchange;
 	String name;
 	Location location;
+	Profession profession;
+	List<String> kitMessage;
 	
 	public PlayerNPC(EconomyNPC plugin, String name, ConfigurationSection cs)
 	{
 		this(plugin, NPCType.fromName(cs.getString("type")), new Location(plugin.getServer().getWorld(cs.getString("world")), cs.getDouble("x"), cs.getDouble("y"), cs.getDouble("z")), name);
+		this.profession = Profession.valueOf(cs.getString("profession", "FARMER").toUpperCase());
 		if (cs.isSet("inventory"))
 			this.inv = cs.getConfigurationSection("inventory");
-		
-		if (plugin.getServer().getOnlinePlayers().size() != 0)
-			respawnNPC();
 	}
 	
 	public PlayerNPC(EconomyNPC plugin, NPCType type, Location location, String name)
@@ -61,13 +68,43 @@ public class PlayerNPC
 		this.type = type;
 		this.name = name;
 		this.location = location;
+		this.profession = Profession.FARMER;
 		if (plugin.getServer().getOnlinePlayers().size() != 0)
 			respawnNPC();
 		
 		if (this.type == NPCType.BLACKSMITH)
 			this.blacksmith = new BlacksmithHandler();
+		
 		if(this.type == NPCType.KIT)
+		{
 			this.kit = new KitHandler();
+			File messageFile = new File(plugin.getDataFolder() + "/kit-messages", name + ".txt");
+			if (!messageFile.exists())
+			{
+				try
+				{
+					messageFile.createNewFile();
+				}
+				catch (IOException e)
+				{
+					plugin.getLogger().warning("Could not create kit message file for NPC, " + name);
+					return;
+				}
+			}
+			
+			try
+			{
+				kitMessage = Files.readAllLines(Paths.get(messageFile.getAbsolutePath()), Charset.defaultCharset());
+			}
+			catch (IOException e)
+			{
+				plugin.getLogger().warning("Could not load kit message for " + name);
+				plugin.getLogger().warning("Falling back on the default message for now.");
+			}
+			
+			kitMessage = new ArrayList<String>();
+		}
+		
 		if(this.type == NPCType.XP)
 			this.exchange = new ExchangeHandler();
 		
@@ -77,12 +114,13 @@ public class PlayerNPC
 	
 	public void respawnNPC()
 	{
+		despawnNPC();
 		villager = (Villager) location.getWorld().spawnEntity(location, EntityType.VILLAGER);
 		villager.setCustomName(name);
 		villager.setCustomNameVisible(true);
 		villager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 6));
 		villager.setRemoveWhenFarAway(false);
-		villager.setProfession(type.getProfession());
+		villager.setProfession(profession);
 	}
 	
 	public void despawnNPC()
@@ -241,14 +279,8 @@ public class PlayerNPC
 				{
 					int numTokens = inv.getItem(inv.getSize() - 1).getAmount();
 					player.sendMessage(ChatColor.GOLD + "Do you really want to spend " + numTokens + " tokens for this kit?");
-					for (int x = 0; x < getInventory(player).getSize() - 1; x++)
-					{
-						if (inv.getItem(x) != null)
-						{
-							ItemStack item = inv.getItem(x);
-							player.sendMessage(ChatColor.AQUA + item.getType().toString() + ":" + item.getDurability() + ChatColor.WHITE + " x " + ChatColor.AQUA + item.getAmount());
-						}
-					}
+					for (String message : getKitMessage())
+						player.sendMessage(message);
 					
 					kit.setNpcName(villager.getCustomName());
 					kit.setNumTokens(numTokens);
@@ -316,6 +348,46 @@ public class PlayerNPC
 		return name;
 	}
 	
+	public Profession getProfession()
+	{
+		if (villager != null)
+			villager.getProfession();
+		
+		return profession;
+	}
+	
+	public void setProfession(Profession profession)
+	{
+		this.profession = profession;
+		respawnNPC();
+	}
+	
+	public List<String> getKitMessage()
+	{
+		if (kitMessage.size() == 0)
+		{
+			List<String> contents = new ArrayList<String>();
+			Inventory inv = getInventory(null);
+			for (int x = 0; x < inv.getSize() - 1; x++)
+			{
+				if (inv.getItem(x) != null)
+				{
+					ItemStack item = inv.getItem(x);
+					contents.add(ChatColor.AQUA + item.getType().toString() + ":" + item.getDurability() + ChatColor.WHITE + " x " + ChatColor.AQUA + item.getAmount());
+				}
+			}
+			
+			return contents;
+		}
+		
+		return kitMessage;
+	}
+	
+	public Location getLocation()
+	{
+		return location;
+	}
+	
 	public ConfigurationSection getInventory()
 	{
 		return inv;
@@ -325,6 +397,7 @@ public class PlayerNPC
 	{
 		ConfigurationSection cs = new YamlConfiguration();
 		cs.set("type", type.toString());
+		cs.set("profession", profession.toString());
 		cs.set("world", location.getWorld().getName());
 		cs.set("x", location.getX());
 		cs.set("y", location.getY());
@@ -338,29 +411,17 @@ public class PlayerNPC
 	public static enum NPCType
 	{
 		// Gambling NPC
-		BETTING(Profession.FARMER),
+		BETTING,
 		// Repair tools/armor
-		BLACKSMITH(Profession.BLACKSMITH),
+		BLACKSMITH,
 		// Buy kits
-		KIT(Profession.LIBRARIAN),
+		KIT,
 		// Standard shop
-		SHOP(Profession.PRIEST),
+		SHOP,
 		// Sell items to the NPC
-		SELL(Profession.PRIEST),
+		SELL,
 		// Exchange tokens for XP/Money
-		XP(Profession.BUTCHER);
-		
-		Profession profession;
-		
-		private NPCType(Profession profession)
-		{
-			this.profession = profession; 
-		}
-		
-		public Profession getProfession()
-		{
-			return profession;
-		}
+		XP;
 		
 		public static NPCType fromName(String name)
 		{
