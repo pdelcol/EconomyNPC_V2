@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.command;
+package com.mongoosecountry.pete800.command.enpc;
 
 import java.util.Arrays;
 
@@ -7,14 +7,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.command.AbstractCommand;
+import com.mongoosecountry.pete800.npc.AbstractNPC;
+import com.mongoosecountry.pete800.npc.AbstractNPC.NPCType;
+import com.mongoosecountry.pete800.npc.InventoryNPC;
 
 public class NPCEdit extends AbstractCommand
 {
 	public NPCEdit(EconomyNPC plugin)
 	{
-		super(plugin, true, "edit", "Edit a shop or kit NPC's offerings.", "npc.edit", Arrays.asList("/npc", "edit", "<name>"), null);
+		super(plugin, true, "edit", "Edit a shop or kit NPC's offerings.", "npc.edit", Arrays.asList("/enpc", "edit", "<name>"), null);
 	}
 
 	@Override
@@ -23,22 +25,23 @@ public class NPCEdit extends AbstractCommand
 		if (!canSenderUseCommand(sender))
 			return false;
 		
-		if (args.length > 1)
+		Player player = (Player) sender;
+		if (args.length > 0)
 		{
-			PlayerNPC npc = plugin.storage.getNPC(args[0]);
+			AbstractNPC npc = plugin.npcStorage.getNPC(args[0]);
 			if (npc == null)
 			{
 				sender.sendMessage(ChatColor.DARK_RED + "This NPC does not exist.");
 				return false;
 			}
 			
-			if (npc.getType() != NPCType.KIT && npc.getType() != NPCType.SHOP)
+			if (npc.getType() != NPCType.EXCHANGE && npc.getType() != NPCType.KIT && npc.getType() != NPCType.SHOP)
 			{
 				sender.sendMessage(ChatColor.DARK_RED + "This NPC does not have an inventory for you to edit.");
 				return false;
 			}
 			
-			((Player) sender).openInventory(npc.getInventoryEdit((Player) sender));
+			player.openInventory(((InventoryNPC) npc).getInventoryEdit(player));
 			return true;
 		}
 		

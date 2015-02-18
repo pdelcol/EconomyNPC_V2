@@ -18,8 +18,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.npc.AbstractNPC;
+import com.mongoosecountry.pete800.npc.AbstractNPC.NPCType;
+import com.mongoosecountry.pete800.npc.InventoryNPC;
 
 public class InventoryListener implements Listener
 {
@@ -39,9 +40,9 @@ public class InventoryListener implements Listener
 		Inventory shop = event.getView().getTopInventory();
 		
 		if (player.getInventory() == shop) return;
-		PlayerNPC npc = null;
+		AbstractNPC npc = null;
 		if (shop.getName().contains("'"))
-			npc = plugin.storage.getNPC(shop.getName().substring(0, shop.getName().indexOf("'")));
+			npc = plugin.npcStorage.getNPC(shop.getName().substring(0, shop.getName().indexOf("'")));
 		else if (shop.getName().contains("-"))
 			return;
 		
@@ -107,11 +108,11 @@ public class InventoryListener implements Listener
 		Inventory inv = event.getView().getTopInventory();
 		Player player = (Player) event.getPlayer();
 		
-		PlayerNPC npc = null;
+		AbstractNPC npc = null;
 		if (inv.getName().contains("'s Shop"))
-			npc = plugin.storage.getNPC(inv.getName().substring(0, inv.getName().indexOf("'")));
+			npc = plugin.npcStorage.getNPC(inv.getName().substring(0, inv.getName().indexOf("'")));
 		else if (inv.getName().contains(" - Edit"))
-			npc = plugin.storage.getNPC(inv.getName().substring(0, inv.getName().indexOf(" ")));
+			npc = plugin.npcStorage.getNPC(inv.getName().substring(0, inv.getName().indexOf(" ")));
 		
 		if (npc == null) return;
 		
@@ -140,9 +141,9 @@ public class InventoryListener implements Listener
 					player.getInventory().addItem(item);
 			}
 		}
-		else if ((npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT) && inv.getName().contains(" - Edit"))
+		else if ((npc.getType() == NPCType.EXCHANGE || npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT) && inv.getName().contains(" - Edit"))
 		{
-			npc.updateInventory(inv);
+			((InventoryNPC) npc).updateInventory(inv);
 			player.sendMessage(ChatColor.GREEN + "Shop updated.");
 		}
 	}

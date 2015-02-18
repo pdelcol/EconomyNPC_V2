@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.command;
+package com.mongoosecountry.pete800.command.enpc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,13 +9,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Villager.Profession;
 
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC;
+import com.mongoosecountry.pete800.command.AbstractCommand;
+import com.mongoosecountry.pete800.npc.AbstractNPC;
 
 public class NPCProfession extends AbstractCommand
 {
 	public NPCProfession(EconomyNPC plugin)
 	{
-		super(plugin, false, "profession", "Set the outfit of an NPC.", "npc.profession", Arrays.asList("/npc", "profession", "<name> <profession>"), null);
+		super(plugin, false, "profession", "Set the outfit of an NPC.", "npc.profession", Arrays.asList("/enpc", "profession", "<name> <profession>"), null);
 	}
 	
 	@Override
@@ -26,7 +27,7 @@ public class NPCProfession extends AbstractCommand
 		
 		if (args.length > 1)
 		{
-			PlayerNPC npc = plugin.storage.getNPC(args[0]);
+			AbstractNPC npc = plugin.npcStorage.getNPC(args[0]);
 			if (npc == null)
 			{
 				sender.sendMessage(ChatColor.DARK_RED + "This NPC does not exist.");

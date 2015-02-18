@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.command;
+package com.mongoosecountry.pete800.command.tokens;
 
 import java.util.Arrays;
 
@@ -8,13 +8,14 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import com.mongoosecountry.pete800.EconomyNPC;
+import com.mongoosecountry.pete800.command.AbstractCommand;
 import com.mongoosecountry.pete800.util.UUIDFetcher;
 
 public class TokensTake extends AbstractCommand
 {
 	public TokensTake(EconomyNPC plugin)
 	{
-		super(plugin, false, "take", "Take tokens from a player's account.", "npc.tokens.take", Arrays.asList("/npc", "tokens take", "<player> <amount>"), null);
+		super(plugin, false, "take", "Take tokens from a player's account.", "npc.tokens.take", Arrays.asList("/tokens", "take", "<player> <amount>"), null);
 	}
 
 	@Override
@@ -23,7 +24,7 @@ public class TokensTake extends AbstractCommand
 		if (!canSenderUseCommand(sender))
 			return false;
 		
-		if (args.length == 2)
+		if (args.length > 1)
 		{
 			OfflinePlayer player = null;
 			try
@@ -48,7 +49,7 @@ public class TokensTake extends AbstractCommand
 				return false;
 			}
 			
-			plugin.tokens.removeTokens(player.getUniqueId(), Integer.valueOf(args[1]));
+			plugin.tokens.removeTokens(player.getUniqueId(), Integer.parseInt(args[1]));
 			sender.sendMessage(ChatColor.AQUA+ "Tokens removed.");
 			return true;
 		}

@@ -62,9 +62,9 @@ public class Prices
 			if (!(entry.getValue() instanceof MemorySection))
 			{
 				String material = entry.getKey().split("\\.")[0].toUpperCase();
-				short durability = Short.valueOf(entry.getKey().split("\\.")[1]);
+				short durability = Short.parseShort(entry.getKey().split("\\.")[1]);
 				ItemStack item = new ItemStack(Material.getMaterial(material), 0, durability);
-				double price = Double.valueOf(entry.getValue().toString());
+				double price = Double.parseDouble(entry.getValue().toString());
 				prices.put(item, price);
 			}
 		}

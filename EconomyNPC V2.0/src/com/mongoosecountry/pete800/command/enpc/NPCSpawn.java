@@ -1,4 +1,4 @@
-package com.mongoosecountry.pete800.command;
+package com.mongoosecountry.pete800.command.enpc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,13 +9,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.command.AbstractCommand;
+import com.mongoosecountry.pete800.npc.AbstractNPC.NPCType;
 
 public class NPCSpawn extends AbstractCommand
 {
 	public NPCSpawn(EconomyNPC plugin)
 	{
-		super(plugin, true, "spawn", "Create an NPC where you are currently stand.", "npc.create", Arrays.asList("/npc", "spawn",  "<type> <name>"), null);
+		super(plugin, true, "spawn", "Create an NPC where you are currently stand.", "npc.create", Arrays.asList("/enpc", "spawn",  "<type> <name>"), null);
 	}
 
 	@Override
@@ -24,7 +25,7 @@ public class NPCSpawn extends AbstractCommand
 		if (!canSenderUseCommand(sender))
 			return false;
 		
-		if (args.length > 2)
+		if (args.length > 1)
 		{
 			NPCType type = NPCType.fromName(args[0]);
 			if (type == null)
@@ -46,7 +47,7 @@ public class NPCSpawn extends AbstractCommand
 				return false;
 			}
 			
-			return plugin.storage.createNPC(args[1], (Player) sender, type);
+			return plugin.npcStorage.createNPC(args[1], (Player) sender, type);
 		}
 		
 		sender.sendMessage(ChatColor.DARK_RED + "Not enough arguments: " + getUsage());

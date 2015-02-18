@@ -12,8 +12,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC.NPCType;
+import com.mongoosecountry.pete800.npc.AbstractNPC;
 
 public class PlayerListener implements Listener
 {
@@ -39,7 +38,7 @@ public class PlayerListener implements Listener
 				@Override
 				public void run()
 				{
-					for (PlayerNPC npc : plugin.storage.getNPCs())
+					for (AbstractNPC npc : plugin.npcStorage.getNPCs())
 						npc.respawnNPC();
 				}
 			}.runTaskLater(plugin, 1L);
@@ -50,7 +49,7 @@ public class PlayerListener implements Listener
 	public void onPlayerQuit(PlayerQuitEvent event)
 	{
 		if (Bukkit.getOnlinePlayers().size() == 1)
-			for (PlayerNPC npc : plugin.storage.getNPCs())
+			for (AbstractNPC npc : plugin.npcStorage.getNPCs())
 				npc.despawnNPC();
 	}
 	
@@ -62,15 +61,11 @@ public class PlayerListener implements Listener
 			return;
 		
 		Villager villager = (Villager) event.getRightClicked();
-		for (PlayerNPC npc : plugin.storage.getNPCs())
+		for (AbstractNPC npc : plugin.npcStorage.getNPCs())
 		{
 			if (npc.getVillager().getUniqueId() == villager.getUniqueId())
 			{
-				if(npc.getType() == NPCType.SHOP || npc.getType() == NPCType.SELL)
-					player.openInventory(npc.getInventory(player));
-				else
-					npc.handleNonInventoryNPC(player, plugin.econ);
-				
+				npc.onInteract(player);
 				event.setCancelled(true);
 				return;
 			}

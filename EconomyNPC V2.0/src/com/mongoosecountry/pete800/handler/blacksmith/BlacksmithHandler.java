@@ -1,64 +1,68 @@
 package com.mongoosecountry.pete800.handler.blacksmith;
 
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.inventory.ItemStack;
 
-public class BlacksmithHandler extends BukkitRunnable{
-	double cost;
-	String playerName;
-	Material material;
-	public Map<Enchantment, Integer> map;
-	public BlacksmithHandler(int cost, String playerName, Material material, Map<Enchantment, Integer> map)
+public class BlacksmithHandler
+{
+	Map<UUID, Double> costMap = new HashMap<UUID, Double>();
+	Map<UUID, ItemStack> itemMap = new HashMap<UUID, ItemStack>();
+	
+	public void newTransaction(double cost, UUID player, ItemStack item)
 	{
-		this.cost = cost;
-		this.playerName = playerName;
-		this.material = material;
-		this.map = map;
+		costMap.put(player, cost);
+		itemMap.put(player, item);
 	}
 	
-	public BlacksmithHandler()
+	public double getCost(UUID player)
 	{
-		cost = 0.0;
-		playerName = "";
-		material = Material.AIR;
+		return costMap.get(player);
 	}
 	
-	public void removeInfo()
+	public ItemStack getItem(UUID player)
 	{
-		cost = 0.0;
-		playerName = "";
-		material = Material.AIR;
+		return itemMap.get(player);
 	}
 	
-	public void addInfo(double cost, String playerName,Material material, Map<Enchantment, Integer> map)
+	public boolean isPlayerTransacting(UUID player)
 	{
-		this.cost = cost;
-		this.playerName = playerName;
-		this.material = material;
-		this.map = map;
+		return costMap.containsKey(player) && itemMap.containsKey(player);
 	}
 	
-	public double getCost()
+	public void removeTransaction(UUID player)
 	{
-		return cost;
+		costMap.remove(player);
+		itemMap.remove(player);
 	}
 	
-	public String getPlayerName()
+	public boolean doesItemMatch(UUID player, ItemStack item)
 	{
-		return playerName;
-	}
-	
-	public Material getMaterial()
-	{
-		return material;
-	}
-	
-	@Override
-	public void run() {
-		new BlacksmithHandler();
+		ItemStack is = itemMap.get(player);
+		if (is.getType() == item.getType() && is.getDurability() == item.getDurability() && is.getEnchantments().size() == item.getEnchantments().size())
+		{
+			List<Enchantment> itemEnchants = new ArrayList<Enchantment>();
+			itemEnchants.addAll(item.getEnchantments().keySet());
+			
+			List<Enchantment> isEnchants = new ArrayList<Enchantment>();
+			isEnchants.addAll(is.getEnchantments().keySet());
+			
+			for (int x = 0; x < itemEnchants.size(); x++)
+				if (itemEnchants.get(x) != isEnchants.get(x) || item.getEnchantmentLevel(itemEnchants.get(x)) != is.getEnchantmentLevel(isEnchants.get(x)))
+					return false;
+			
+			if (is.getItemMeta().hasDisplayName() && item.getItemMeta().hasDisplayName() && is.getItemMeta().getDisplayName().equals(item.getItemMeta().getDisplayName()))
+				return true;
+			
+			if (!is.getItemMeta().hasDisplayName() && !item.getItemMeta().hasDisplayName())
+				return true;
+		}
+		
+		return false;
 	}
 }

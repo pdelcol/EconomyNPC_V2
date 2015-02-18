@@ -2,6 +2,9 @@ name: EconomyNPC
 main: com.mongoosecountry.pete800.EconomyNPC
 version: 2.0
 commands:
-    npc:
+    enpc:
       description: EconomyNPC related commands
+    tokens:
+      description: EconomyNPC token commands
+      aliases: [token]
 depend: [Vault]

@@ -8,7 +8,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 
 import com.mongoosecountry.pete800.EconomyNPC;
-import com.mongoosecountry.pete800.npc.PlayerNPC;
+import com.mongoosecountry.pete800.npc.AbstractNPC;
 
 public class EntityListener implements Listener
 {
@@ -26,7 +26,7 @@ public class EntityListener implements Listener
 			return;
 		
 		Villager villager = (Villager) event.getEntity();
-		for (PlayerNPC npc : plugin.storage.getNPCs())
+		for (AbstractNPC npc : plugin.npcStorage.getNPCs())
 		{
 			if (npc.getVillager().getUniqueId() == villager.getUniqueId())
 			{
@@ -42,8 +42,16 @@ public class EntityListener implements Listener
 		if (event.getTarget() == null)
 			return;
 		
-		for (PlayerNPC npc : plugin.storage.getNPCs())
+		if (event.getTarget().getType() != EntityType.VILLAGER)
+			return;
+		
+		for (AbstractNPC npc : plugin.npcStorage.getNPCs())
+		{
 			if (npc.getVillager() != null && event.getTarget().getUniqueId() == npc.getVillager().getUniqueId())
+			{
 				event.setTarget(null);
+				return;
+			}
+		}
 	}
 }

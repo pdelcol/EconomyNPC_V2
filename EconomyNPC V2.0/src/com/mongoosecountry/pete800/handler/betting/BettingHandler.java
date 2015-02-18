@@ -8,7 +8,7 @@ import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.entity.Player;
 
-import com.mongoosecountry.pete800.npc.PlayerNPC;
+import com.mongoosecountry.pete800.npc.AbstractNPC;
 
 public class BettingHandler {
 	UUID player, challanger;
@@ -24,7 +24,7 @@ public class BettingHandler {
 	{
 		
 	}
-	public void onClick(Player player, PlayerNPC npc, Economy econ)
+	public void onClick(Player player, AbstractNPC npc, Economy econ)
 	{
 		
 	}

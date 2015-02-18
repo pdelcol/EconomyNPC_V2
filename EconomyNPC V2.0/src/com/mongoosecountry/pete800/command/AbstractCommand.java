@@ -10,7 +10,7 @@ import com.mongoosecountry.pete800.EconomyNPC;
 
 public abstract class AbstractCommand
 {
-	EconomyNPC plugin;
+	protected EconomyNPC plugin;
 	boolean isPlayerOnly;
 	List<AbstractCommand> subCommands;
 	String name;
@@ -54,6 +54,11 @@ public abstract class AbstractCommand
 		return usage;
 	}
 	
+	public String getCommandHelpInfo()
+	{
+		return usage + ChatColor.GREEN + " " + description;
+	}
+	
 	public List<AbstractCommand> getSubCommands()
 	{
 		return subCommands;
@@ -63,17 +68,17 @@ public abstract class AbstractCommand
 	
 	public boolean canSenderUseCommand(CommandSender sender)
 	{
+		if (permission.equals(""))
+			return true;
+		
 		if (isPlayerOnly && !(sender instanceof Player))
 		{
 			sender.sendMessage("This is a player only command.");
 			return false;
 		}
 		
-		if (sender instanceof Player)
+		if (sender instanceof Player && !sender.hasPermission(permission))
 		{
-			if (sender.hasPermission(getPermission()))
-				return true;
-			
 			sender.sendMessage(ChatColor.DARK_RED + "You don't have permission to do that.");
 			return false;
 		}
