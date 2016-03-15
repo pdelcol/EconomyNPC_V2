@@ -18,18 +18,18 @@ import java.util.List;
 
 public class NPCSpawn extends AbstractCommand
 {
-	public NPCSpawn()
-	{
-		super("spawn", "Create an NPC where you are currently stand.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("spawn"), new CommandArgument("type", Syntax.REQUIRED, Syntax.REPLACE), new CommandArgument("name", Syntax.REQUIRED, Syntax.REPLACE)), 2, "npc.create", false);
-	}
+    public NPCSpawn()
+    {
+        super("spawn", "Create an NPC where you are currently stand.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("spawn"), new CommandArgument("type", Syntax.REQUIRED, Syntax.REPLACE), new CommandArgument("name", Syntax.REQUIRED, Syntax.REPLACE)), 2, "npc.create", false);
+    }
 
-	@Nonnull
-	@Override
-	public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
-	{
+    @Nonnull
+    @Override
+    public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
+    {
         String[] args = splitArgs(arguments);
-		if (!testPermission(source))
-			return CommandResult.empty();
+        if (!testPermission(source))
+            return CommandResult.empty();
 
         if (!minArgsMet(source, args.length))
             return CommandResult.empty();
@@ -58,5 +58,5 @@ public class NPCSpawn extends AbstractCommand
             return CommandResult.success();
 
         return CommandResult.empty();
-	}
+    }
 }

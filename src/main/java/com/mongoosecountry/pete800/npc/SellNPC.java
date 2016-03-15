@@ -6,13 +6,13 @@ import org.spongepowered.api.world.World;
 
 public class SellNPC extends InventoryNPC
 {
-	public SellNPC(Location<World> location, String name)
-	{
-		super(location, NPCType.SELL, name);
-	}
-	
-	public SellNPC(String name, ConfigurationNode cn)
-	{
-		super(name, cn);
-	}
+    public SellNPC(Location<World> location, String name)
+    {
+        super(location, NPCType.SELL, name);
+    }
+
+    public SellNPC(String name, ConfigurationNode cn)
+    {
+        super(name, cn);
+    }
 }

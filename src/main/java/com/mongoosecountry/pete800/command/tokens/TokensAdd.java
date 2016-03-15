@@ -18,18 +18,18 @@ import java.util.UUID;
 
 public class TokensAdd extends AbstractCommand
 {
-	public TokensAdd()
-	{
-		super("add", "Add tokens to a player's account.", Arrays.asList(new CommandArgument("/tokens"), new CommandArgument("add"), new CommandArgument("player", Syntax.REPLACE, Syntax.REQUIRED), new CommandArgument("amount", Syntax.REPLACE, Syntax.REQUIRED)), 2, "npc.tokens.add", false);
-	}
+    public TokensAdd()
+    {
+        super("add", "Add tokens to a player's account.", Arrays.asList(new CommandArgument("/tokens"), new CommandArgument("add"), new CommandArgument("player", Syntax.REPLACE, Syntax.REQUIRED), new CommandArgument("amount", Syntax.REPLACE, Syntax.REQUIRED)), 2, "npc.tokens.add", false);
+    }
 
     @Nonnull
-	@Override
-	public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
-	{
-		String[] args = splitArgs(arguments);
-		if (!testPermission(source))
-			return CommandResult.empty();
+    @Override
+    public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
+    {
+        String[] args = splitArgs(arguments);
+        if (!testPermission(source))
+            return CommandResult.empty();
 
         if (minArgsMet(source, args.length))
         {
@@ -63,5 +63,5 @@ public class TokensAdd extends AbstractCommand
         EconomyNPC.tokens.addTokens(player, Integer.parseInt(args[1]));
         source.sendMessage(Text.builder("Tokens added.").color(TextColors.AQUA).build());
         return CommandResult.success();
-	}
+    }
 }

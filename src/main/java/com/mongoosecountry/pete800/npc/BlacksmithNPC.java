@@ -33,26 +33,26 @@ import java.util.UUID;
 
 public class BlacksmithNPC extends AbstractNPC
 {
-	BlacksmithHandler blacksmithHandler = new BlacksmithHandler();
+    BlacksmithHandler blacksmithHandler = new BlacksmithHandler();
     Map<Double, Integer> expLevels = new HashMap<>();
     Map<ItemType, ItemType> repairables = new HashMap<>();
     Map<ItemType, Integer> maxDurabilities = new HashMap<>();
-	
-	public BlacksmithNPC(Location<World> location, String name)
-	{
-		super(location, NPCType.BLACKSMITH, name);
-		parseMaps();
-	}
-	
-	public BlacksmithNPC(String name, ConfigurationNode cn)
-	{
-		super(name, cn);
-		parseMaps();
-	}
 
-	@Override
-	public void onInteract(Player player)
-	{
+    public BlacksmithNPC(Location<World> location, String name)
+    {
+        super(location, NPCType.BLACKSMITH, name);
+        parseMaps();
+    }
+
+    public BlacksmithNPC(String name, ConfigurationNode cn)
+    {
+        super(name, cn);
+        parseMaps();
+    }
+
+    @Override
+    public void onInteract(Player player)
+    {
         Optional<ItemStack> itemStackOptional = player.getItemInHand();
         if (!itemStackOptional.isPresent())
         {
@@ -60,17 +60,17 @@ public class BlacksmithNPC extends AbstractNPC
             return;
         }
 
-		ItemStack itemStack = itemStackOptional.get();
+        ItemStack itemStack = itemStackOptional.get();
         DurabilityData durabilityData = Utils.getDurabilityData(itemStack);
         ItemType itemType = itemStack.getItem();
-		if (!repairables.containsKey(itemType) || durabilityData.durability().get() == 0)
-		{
-			player.sendMessage(Utils.darkRedText("I can not repair that item."));
-			return;
-		}
+        if (!repairables.containsKey(itemType) || durabilityData.durability().get() == 0)
+        {
+            player.sendMessage(Utils.darkRedText("I can not repair that item."));
+            return;
+        }
 
         Config config = EconomyNPC.config;
-		double costPerUnit = EconomyNPC.prices.getBuyPrice(ItemStack.of(repairables.get(itemStack.getItem()), 0));
+        double costPerUnit = EconomyNPC.prices.getBuyPrice(ItemStack.of(repairables.get(itemStack.getItem()), 0));
         double enchantCost = 0;
         //Max durability not available sticking with a hardcoded solution for now.
         double numUnits = round(durabilityData.durability().get() / (maxDurabilities.get(itemType) / 4));
@@ -80,107 +80,107 @@ public class BlacksmithNPC extends AbstractNPC
         List<ItemEnchantment> enchants = Utils.getItemEnchants(itemStack);
         UUID uuid = player.getUniqueId();
         if (enchants.size() != 0)
-		{
-			for (ItemEnchantment enchant : enchants)
-			{
-				int weight = 0;
-				for (EnchantEnums enumEnchant : EnchantEnums.values())
-					if (enchant.getEnchantment() == enumEnchant.getEnchant())
-						weight = enumEnchant.getWeight();
-				
-				enchantCost += (11 - (10 * weight / 10)) * enchant.getLevel();
-			}
-		}
-		
-		if (!blacksmithHandler.isPlayerTransacting(uuid))
-		{
-			double cost = costPerUnit * numUnits + enchantCost + experienceCost + nameCost;				
-			player.sendMessage(Text.join(Utils.goldText("The tool will cost: "), Text.builder("$" + cost).color(TextColors.AQUA).build(), Utils.goldText(". If you would like to reforge it, right click me again.")));
-			blacksmithHandler.newTransaction(cost, uuid, itemStack);
+        {
+            for (ItemEnchantment enchant : enchants)
+            {
+                int weight = 0;
+                for (EnchantEnums enumEnchant : EnchantEnums.values())
+                    if (enchant.getEnchantment() == enumEnchant.getEnchant())
+                        weight = enumEnchant.getWeight();
+
+                enchantCost += (11 - (10 * weight / 10)) * enchant.getLevel();
+            }
+        }
+
+        if (!blacksmithHandler.isPlayerTransacting(uuid))
+        {
+            double cost = costPerUnit * numUnits + enchantCost + experienceCost + nameCost;
+            player.sendMessage(Text.join(Utils.goldText("The tool will cost: "), Text.builder("$" + cost).color(TextColors.AQUA).build(), Utils.goldText(". If you would like to reforge it, right click me again.")));
+            blacksmithHandler.newTransaction(cost, uuid, itemStack);
             Task.builder().execute(new BlacksmithTask(blacksmithHandler, uuid)).delayTicks(100).submit(EconomyNPC.instance());
-		}
-		else
-		{
-			if (blacksmithHandler.doesItemMatch(uuid, itemStack))
-			{
+        }
+        else
+        {
+            if (blacksmithHandler.doesItemMatch(uuid, itemStack))
+            {
                 EconomyService econ = Utils.getEconomyService().get();
-				if (econ.getOrCreateAccount(uuid).get().withdraw(econ.getDefaultCurrency(), new BigDecimal(blacksmithHandler.getCost(uuid)), Cause.of(NamedCause.source(EconomyNPC.instance()))).getResult() == ResultType.SUCCESS)
-				{
-					player.getItemInHand().get().offer(Keys.ITEM_DURABILITY, 0);
-					player.sendMessage(Utils.goldText("Transaction successful!"));
-				}
-				else
-					player.sendMessage(Utils.darkRedText("You don't have enough money for that."));
-			}
-			else
-				player.sendMessage(Utils.darkRedText("Something's not right with that!"));
-			
-			blacksmithHandler.removeTransaction(uuid);
-		}
-	}
-	
-	private void parseMaps()
-	{
-		ItemType wood = ItemTypes.PLANKS;
-		ItemType carrot = ItemTypes.CARROT;
-		ItemType flint = ItemTypes.FLINT;
-		ItemType stick = ItemTypes.STICK;
-		ItemType leather = ItemTypes.LEATHER;
-		ItemType cobble = ItemTypes.COBBLESTONE;
-		ItemType iron = ItemTypes.IRON_INGOT;
-		ItemType gold = ItemTypes.GOLD_INGOT;
-		ItemType diamond = ItemTypes.DIAMOND;
-		repairables.put(ItemTypes.IRON_SHOVEL, iron);
-		repairables.put(ItemTypes.IRON_PICKAXE, iron);
-		repairables.put(ItemTypes.IRON_AXE, iron);
-		repairables.put(ItemTypes.WOODEN_SHOVEL, wood);
-		repairables.put(ItemTypes.WOODEN_PICKAXE, wood);
-		repairables.put(ItemTypes.WOODEN_AXE, wood);
-		repairables.put(ItemTypes.STONE_SHOVEL, cobble);
-		repairables.put(ItemTypes.STONE_PICKAXE, cobble);
-		repairables.put(ItemTypes.STONE_AXE, cobble);
-		repairables.put(ItemTypes.DIAMOND_SHOVEL, diamond);
-		repairables.put(ItemTypes.DIAMOND_PICKAXE, diamond);
-		repairables.put(ItemTypes.DIAMOND_AXE, diamond);
-		repairables.put(ItemTypes.GOLDEN_SHOVEL, gold);
-		repairables.put(ItemTypes.GOLDEN_PICKAXE, gold);
-		repairables.put(ItemTypes.GOLDEN_AXE, gold);
-		repairables.put(ItemTypes.WOODEN_HOE, wood);
-		repairables.put(ItemTypes.IRON_HOE, iron);
-		repairables.put(ItemTypes.STONE_HOE, cobble);
-		repairables.put(ItemTypes.DIAMOND_HOE, diamond);
-		repairables.put(ItemTypes.GOLDEN_HOE, gold);
-		repairables.put(ItemTypes.WOODEN_SWORD, wood);
-		repairables.put(ItemTypes.IRON_SWORD, iron);
-		repairables.put(ItemTypes.STONE_SWORD, cobble);
-		repairables.put(ItemTypes.DIAMOND_SWORD, diamond);
-		repairables.put(ItemTypes.GOLDEN_SWORD, gold);
-		repairables.put(ItemTypes.LEATHER_BOOTS, leather);
-		repairables.put(ItemTypes.CHAINMAIL_BOOTS, iron);
-		repairables.put(ItemTypes.IRON_BOOTS, iron);
-		repairables.put(ItemTypes.DIAMOND_BOOTS, diamond);
-		repairables.put(ItemTypes.GOLDEN_BOOTS, gold);
-		repairables.put(ItemTypes.LEATHER_CHESTPLATE, leather);
-		repairables.put(ItemTypes.CHAINMAIL_CHESTPLATE, iron);
-		repairables.put(ItemTypes.IRON_CHESTPLATE, iron);
-		repairables.put(ItemTypes.DIAMOND_CHESTPLATE, diamond);
-		repairables.put(ItemTypes.GOLDEN_CHESTPLATE, gold);
-		repairables.put(ItemTypes.LEATHER_HELMET, leather);
-		repairables.put(ItemTypes.CHAINMAIL_HELMET, iron);
-		repairables.put(ItemTypes.IRON_HELMET, iron);
-		repairables.put(ItemTypes.DIAMOND_HELMET, diamond);
-		repairables.put(ItemTypes.GOLDEN_HELMET, gold);
-		repairables.put(ItemTypes.LEATHER_LEGGINGS, leather);
-		repairables.put(ItemTypes.CHAINMAIL_LEGGINGS, iron);
-		repairables.put(ItemTypes.IRON_LEGGINGS, iron);
-		repairables.put(ItemTypes.DIAMOND_LEGGINGS, diamond);
-		repairables.put(ItemTypes.GOLDEN_LEGGINGS, gold);
-		repairables.put(ItemTypes.BOW, stick);
-		repairables.put(ItemTypes.FLINT_AND_STEEL, flint);
-		repairables.put(ItemTypes.FISHING_ROD, stick);
-		repairables.put(ItemTypes.SHEARS, iron);
-		repairables.put(ItemTypes.CARROT_ON_A_STICK, carrot);
-        
+                if (econ.getOrCreateAccount(uuid).get().withdraw(econ.getDefaultCurrency(), new BigDecimal(blacksmithHandler.getCost(uuid)), Cause.of(NamedCause.source(EconomyNPC.instance()))).getResult() == ResultType.SUCCESS)
+                {
+                    player.getItemInHand().get().offer(Keys.ITEM_DURABILITY, 0);
+                    player.sendMessage(Utils.goldText("Transaction successful!"));
+                }
+                else
+                    player.sendMessage(Utils.darkRedText("You don't have enough money for that."));
+            }
+            else
+                player.sendMessage(Utils.darkRedText("Something's not right with that!"));
+
+            blacksmithHandler.removeTransaction(uuid);
+        }
+    }
+
+    private void parseMaps()
+    {
+        ItemType wood = ItemTypes.PLANKS;
+        ItemType carrot = ItemTypes.CARROT;
+        ItemType flint = ItemTypes.FLINT;
+        ItemType stick = ItemTypes.STICK;
+        ItemType leather = ItemTypes.LEATHER;
+        ItemType cobble = ItemTypes.COBBLESTONE;
+        ItemType iron = ItemTypes.IRON_INGOT;
+        ItemType gold = ItemTypes.GOLD_INGOT;
+        ItemType diamond = ItemTypes.DIAMOND;
+        repairables.put(ItemTypes.IRON_SHOVEL, iron);
+        repairables.put(ItemTypes.IRON_PICKAXE, iron);
+        repairables.put(ItemTypes.IRON_AXE, iron);
+        repairables.put(ItemTypes.WOODEN_SHOVEL, wood);
+        repairables.put(ItemTypes.WOODEN_PICKAXE, wood);
+        repairables.put(ItemTypes.WOODEN_AXE, wood);
+        repairables.put(ItemTypes.STONE_SHOVEL, cobble);
+        repairables.put(ItemTypes.STONE_PICKAXE, cobble);
+        repairables.put(ItemTypes.STONE_AXE, cobble);
+        repairables.put(ItemTypes.DIAMOND_SHOVEL, diamond);
+        repairables.put(ItemTypes.DIAMOND_PICKAXE, diamond);
+        repairables.put(ItemTypes.DIAMOND_AXE, diamond);
+        repairables.put(ItemTypes.GOLDEN_SHOVEL, gold);
+        repairables.put(ItemTypes.GOLDEN_PICKAXE, gold);
+        repairables.put(ItemTypes.GOLDEN_AXE, gold);
+        repairables.put(ItemTypes.WOODEN_HOE, wood);
+        repairables.put(ItemTypes.IRON_HOE, iron);
+        repairables.put(ItemTypes.STONE_HOE, cobble);
+        repairables.put(ItemTypes.DIAMOND_HOE, diamond);
+        repairables.put(ItemTypes.GOLDEN_HOE, gold);
+        repairables.put(ItemTypes.WOODEN_SWORD, wood);
+        repairables.put(ItemTypes.IRON_SWORD, iron);
+        repairables.put(ItemTypes.STONE_SWORD, cobble);
+        repairables.put(ItemTypes.DIAMOND_SWORD, diamond);
+        repairables.put(ItemTypes.GOLDEN_SWORD, gold);
+        repairables.put(ItemTypes.LEATHER_BOOTS, leather);
+        repairables.put(ItemTypes.CHAINMAIL_BOOTS, iron);
+        repairables.put(ItemTypes.IRON_BOOTS, iron);
+        repairables.put(ItemTypes.DIAMOND_BOOTS, diamond);
+        repairables.put(ItemTypes.GOLDEN_BOOTS, gold);
+        repairables.put(ItemTypes.LEATHER_CHESTPLATE, leather);
+        repairables.put(ItemTypes.CHAINMAIL_CHESTPLATE, iron);
+        repairables.put(ItemTypes.IRON_CHESTPLATE, iron);
+        repairables.put(ItemTypes.DIAMOND_CHESTPLATE, diamond);
+        repairables.put(ItemTypes.GOLDEN_CHESTPLATE, gold);
+        repairables.put(ItemTypes.LEATHER_HELMET, leather);
+        repairables.put(ItemTypes.CHAINMAIL_HELMET, iron);
+        repairables.put(ItemTypes.IRON_HELMET, iron);
+        repairables.put(ItemTypes.DIAMOND_HELMET, diamond);
+        repairables.put(ItemTypes.GOLDEN_HELMET, gold);
+        repairables.put(ItemTypes.LEATHER_LEGGINGS, leather);
+        repairables.put(ItemTypes.CHAINMAIL_LEGGINGS, iron);
+        repairables.put(ItemTypes.IRON_LEGGINGS, iron);
+        repairables.put(ItemTypes.DIAMOND_LEGGINGS, diamond);
+        repairables.put(ItemTypes.GOLDEN_LEGGINGS, gold);
+        repairables.put(ItemTypes.BOW, stick);
+        repairables.put(ItemTypes.FLINT_AND_STEEL, flint);
+        repairables.put(ItemTypes.FISHING_ROD, stick);
+        repairables.put(ItemTypes.SHEARS, iron);
+        repairables.put(ItemTypes.CARROT_ON_A_STICK, carrot);
+
         int diamondTool = 1562;
         int goldTool = 33;
         int ironTool = 251;
@@ -240,24 +240,24 @@ public class BlacksmithNPC extends AbstractNPC
         maxDurabilities.put(ItemTypes.FISHING_ROD, 65);
         maxDurabilities.put(ItemTypes.SHEARS, 238);
         maxDurabilities.put(ItemTypes.CARROT_ON_A_STICK, 26);
-		
-		expLevels.put(1.0, 7);
-		expLevels.put(2.0, 16);
-		expLevels.put(3.0, 27);
-		expLevels.put(4.0, 40);
-	}
-	
-	private double round(double d)
-	{
-		if (d > 0 && d <= 1)
-			return 1.0;
-		else if (d > 1 && d <= 2)
-			return 2.0;
-		else if (d > 2 && d <= 3)
-			return 3.0;
-		else if (d > 3 && d <= 4)
-			return 4.0;
-		else
-			return 0.0;
-	}
+
+        expLevels.put(1.0, 7);
+        expLevels.put(2.0, 16);
+        expLevels.put(3.0, 27);
+        expLevels.put(4.0, 40);
+    }
+
+    private double round(double d)
+    {
+        if (d > 0 && d <= 1)
+            return 1.0;
+        else if (d > 1 && d <= 2)
+            return 2.0;
+        else if (d > 2 && d <= 3)
+            return 3.0;
+        else if (d > 3 && d <= 4)
+            return 4.0;
+        else
+            return 0.0;
+    }
 }

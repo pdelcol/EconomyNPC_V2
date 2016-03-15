@@ -6,20 +6,20 @@ import java.util.UUID;
 
 public class KitHandler
 {
-	List<UUID> players = new ArrayList<UUID>();
-	
-	public void newTransaction(UUID player)
-	{
-		players.add(player);
-	}
-	
-	public void endTransaction(UUID player)
-	{
-		players.remove(player);
-	}
-	
-	public boolean isTransacting(UUID player)
-	{
-		return players.contains(player);
-	}
+    List<UUID> players = new ArrayList<UUID>();
+
+    public void newTransaction(UUID player)
+    {
+        players.add(player);
+    }
+
+    public void endTransaction(UUID player)
+    {
+        players.remove(player);
+    }
+
+    public boolean isTransacting(UUID player)
+    {
+        return players.contains(player);
+    }
 }

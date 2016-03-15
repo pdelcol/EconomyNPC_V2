@@ -17,22 +17,22 @@ import java.util.Arrays;
 
 public class NPCMove extends AbstractCommand
 {
-	public NPCMove()
-	{
-		super("move", "Move an NPC to your location.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("move"), new CommandArgument("name", Syntax.REPLACE, Syntax.REQUIRED)), 1, "npc.move", true);
-	}
+    public NPCMove()
+    {
+        super("move", "Move an NPC to your location.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("move"), new CommandArgument("name", Syntax.REPLACE, Syntax.REQUIRED)), 1, "npc.move", true);
+    }
 
     @Nonnull
-	@Override
-	public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
-	{
-		String[] args = splitArgs(arguments);
-		if (!testPermission(source))
-			return CommandResult.empty();
-		
-		Player player = (Player) source;
-		if (!minArgsMet(player, args.length))
-			return CommandResult.empty();
+    @Override
+    public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
+    {
+        String[] args = splitArgs(arguments);
+        if (!testPermission(source))
+            return CommandResult.empty();
+
+        Player player = (Player) source;
+        if (!minArgsMet(player, args.length))
+            return CommandResult.empty();
 
         AbstractNPC npc = EconomyNPC.npcStorage.getNPC(args[0]);
         if (npc == null)
@@ -44,5 +44,5 @@ public class NPCMove extends AbstractCommand
         npc.setLocation(player.getLocation());
         player.sendMessage(Text.builder("NPC moved.").color(TextColors.GREEN).build());
         return CommandResult.success();
-	}
+    }
 }

@@ -18,18 +18,18 @@ import java.util.UUID;
 
 public class TokensTake extends AbstractCommand
 {
-	public TokensTake()
-	{
-		super("take", "Take tokens from a player's account.", Arrays.asList(new CommandArgument("/tokens"), new CommandArgument("take"), new CommandArgument("player", Syntax.REPLACE, Syntax.REQUIRED), new CommandArgument("amount", Syntax.REPLACE, Syntax.REQUIRED)), 2, "npc.tokens.take", false);
-	}
+    public TokensTake()
+    {
+        super("take", "Take tokens from a player's account.", Arrays.asList(new CommandArgument("/tokens"), new CommandArgument("take"), new CommandArgument("player", Syntax.REPLACE, Syntax.REQUIRED), new CommandArgument("amount", Syntax.REPLACE, Syntax.REQUIRED)), 2, "npc.tokens.take", false);
+    }
 
-	@Nonnull
-	@Override
-	public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
-	{
+    @Nonnull
+    @Override
+    public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
+    {
         String[] args = splitArgs(arguments);
-		if (!testPermission(source))
-			return CommandResult.empty();
+        if (!testPermission(source))
+            return CommandResult.empty();
 
         if (minArgsMet(source, args.length))
         {
@@ -63,5 +63,5 @@ public class TokensTake extends AbstractCommand
         EconomyNPC.tokens.removeTokens(player, Integer.parseInt(args[1]));
         source.sendMessage(Text.builder("Tokens removed.").color(TextColors.AQUA).build());
         return CommandResult.success();
-	}	
+    }
 }

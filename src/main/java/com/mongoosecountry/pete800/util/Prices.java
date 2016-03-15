@@ -27,40 +27,40 @@ import java.util.Map;
 
 public class Prices
 {
-	Map<ItemStack, Double> prices = new HashMap<>();
-	
-	public Prices(File configDir)
-	{
-		File file = new File(configDir, "prices.yml");
+    Map<ItemStack, Double> prices = new HashMap<>();
+
+    public Prices(File configDir)
+    {
+        File file = new File(configDir, "prices.yml");
         Logger logger = LoggerFactory.getLogger("EconomyNPC");
-		if (!file.exists())
-		{
-			try
-			{
-				if (!file.createNewFile())
+        if (!file.exists())
+        {
+            try
+            {
+                if (!file.createNewFile())
                 {
                     logger.error("Could not create prices.yml");
                     return;
                 }
-			}
-			catch (IOException e)
-			{
+            }
+            catch (IOException e)
+            {
                 logger.error("Could not create prices.yml");
                 return;
-			}
-		}
+            }
+        }
 
         ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setFile(file).build();
-		ConfigurationNode priceConfig;
-		try
-		{
-			priceConfig = loader.load();
-		}
-		catch (IOException e)
-		{
-			logger.error("Error loading prices.yml");
+        ConfigurationNode priceConfig;
+        try
+        {
+            priceConfig = loader.load();
+        }
+        catch (IOException e)
+        {
+            logger.error("Error loading prices.yml");
             return;
-		}
+        }
 
         for (ItemType itemType : Sponge.getRegistry().getAllOf(ItemType.class))
         {
@@ -108,7 +108,7 @@ public class Prices
             else if (item.get(CatalogItemData.SPAWNABLE_DATA).isPresent())
                 addItem(itemType, itemTypeNode, CatalogTypes.ENTITY_TYPE, Keys.SPAWNABLE_ENTITY_TYPE);
         }
-	}
+    }
 
     private <T extends CatalogType> void addItem(ItemType itemType, ConfigurationNode variationNode, Class<T> typeClass, Key<Value<T>> key)
     {
@@ -123,10 +123,10 @@ public class Prices
             }
         }
     }
-	
-	public double getBuyPrice(ItemStack itemStack)
-	{
-		double price = 0.0;
+
+    public double getBuyPrice(ItemStack itemStack)
+    {
+        double price = 0.0;
         for (ItemStack is : prices.keySet())
         {
             if (itemStack.getItem() != is && !isSameVariant(itemStack, is))
@@ -135,9 +135,9 @@ public class Prices
             if (prices.get(is) != null)
                 price = prices.get(is) * itemStack.getQuantity();
         }
-		
-		return price;
-	}
+
+        return price;
+    }
 
     private boolean isSameVariant(ItemStack itemStack1, ItemStack itemStack2)
     {
@@ -151,9 +151,9 @@ public class Prices
 
         return false;
     }
-	
-	public double getSellPrice(ItemStack item)
-	{
-		return getBuyPrice(item) * EconomyNPC.config.getSellBackPercentage();
-	}
+
+    public double getSellPrice(ItemStack item)
+    {
+        return getBuyPrice(item) * EconomyNPC.config.getSellBackPercentage();
+    }
 }

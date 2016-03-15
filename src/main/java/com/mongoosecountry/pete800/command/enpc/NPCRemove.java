@@ -12,22 +12,22 @@ import java.util.Arrays;
 
 public class NPCRemove extends AbstractCommand
 {
-	public NPCRemove()
-	{
-		super("remove", "Remove an NPC.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("remove"), new CommandArgument("name", Syntax.REPLACE, Syntax.REQUIRED)), 1, "npc.remove", false);
-	}
+    public NPCRemove()
+    {
+        super("remove", "Remove an NPC.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("remove"), new CommandArgument("name", Syntax.REPLACE, Syntax.REQUIRED)), 1, "npc.remove", false);
+    }
 
-	@Nonnull
-	@Override
-	public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
-	{
+    @Nonnull
+    @Override
+    public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
+    {
         String[] args = splitArgs(arguments);
-		if (!testPermission(source))
-			return CommandResult.empty();
+        if (!testPermission(source))
+            return CommandResult.empty();
 
         if (!minArgsMet(source, args.length))
             return CommandResult.empty();
 
-		return CommandResult.builder().successCount(EconomyNPC.npcStorage.removeNPC(args[0], source) ? 1 : 0).build();
-	}
+        return CommandResult.builder().successCount(EconomyNPC.npcStorage.removeNPC(args[0], source) ? 1 : 0).build();
+    }
 }

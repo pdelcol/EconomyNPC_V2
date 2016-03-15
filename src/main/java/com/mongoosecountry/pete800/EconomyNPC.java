@@ -25,16 +25,16 @@ import java.util.Optional;
 @Plugin(id = "com.mongoosecountry.pete800", name = "EconomyNPC", version = "3.0")
 public class EconomyNPC
 {
-	public static Config config;
-	public static Logger logger;
-	public static NPCStorage npcStorage;
-	public static Prices prices;
-	public static Text currencySymbol;
-	public static TokenHandler tokens;
-	
-	@Listener
-	public void startUp(GameStartedServerEvent event)
-	{
+    public static Config config;
+    public static Logger logger;
+    public static NPCStorage npcStorage;
+    public static Prices prices;
+    public static Text currencySymbol;
+    public static TokenHandler tokens;
+
+    @Listener
+    public void startUp(GameStartedServerEvent event)
+    {
         logger = instance().getLogger();
         Optional<EconomyService> economyServiceOptional = Utils.getEconomyService();
         if (!economyServiceOptional.isPresent())
@@ -46,28 +46,28 @@ public class EconomyNPC
         currencySymbol = economyServiceOptional.get().getDefaultCurrency().getSymbol();
         File configDir = new File("plugins", "EconomyNPC");
         config = new Config(configDir);
-		npcStorage = new NPCStorage(configDir);
-		prices = new Prices(configDir);
-		tokens = new TokenHandler();
-		tokens.load(configDir);
-		
-		Sponge.getCommandManager().register(this, new ENPC());
+        npcStorage = new NPCStorage(configDir);
+        prices = new Prices(configDir);
+        tokens = new TokenHandler();
+        tokens.load(configDir);
+
+        Sponge.getCommandManager().register(this, new ENPC());
         Sponge.getCommandManager().register(this, new Tokens());
-		
-		Sponge.getEventManager().registerListeners(this, new EntityListener());
-		Sponge.getEventManager().registerListeners(this, new PlayerListener());
+
+        Sponge.getEventManager().registerListeners(this, new EntityListener());
+        Sponge.getEventManager().registerListeners(this, new PlayerListener());
         Sponge.getEventManager().registerListeners(this, new InventoryListener());
-		
-		logger.info("EconomyNPC is enabled!");
-	}
-	
-	@Listener
-	public void shutDown(GameStoppedServerEvent event)
-	{
-		tokens.save();
-		npcStorage.save(true);
-		logger.info("EconomyNPC is disabled!");
-	}
+
+        logger.info("EconomyNPC is enabled!");
+    }
+
+    @Listener
+    public void shutDown(GameStoppedServerEvent event)
+    {
+        tokens.save();
+        npcStorage.save(true);
+        logger.info("EconomyNPC is disabled!");
+    }
 
     public static PluginContainer instance()
     {

@@ -34,9 +34,9 @@ import java.util.Optional;
 //TODO move to individual NPC?
 public class InventoryListener
 {
-	@Listener
-	public void onInventoryClickClick(ClickInventoryEvent event)
-	{
+    @Listener
+    public void onInventoryClickClick(ClickInventoryEvent event)
+    {
         Cause cause = Cause.of(NamedCause.source(EconomyNPC.instance()));
         List<Player> players = new ArrayList<>();
         players.addAll(event.getTargetInventory().getViewers());
@@ -54,22 +54,22 @@ public class InventoryListener
         if (!slotTransaction.getSlot().peek().isPresent())
             return;
 
-		ItemStack clicked = slotTransaction.getOriginal().createStack();
-		OrderedInventory shop = (OrderedInventory) event.getTargetInventory();
-		if (player.getInventory() == shop)
+        ItemStack clicked = slotTransaction.getOriginal().createStack();
+        OrderedInventory shop = (OrderedInventory) event.getTargetInventory();
+        if (player.getInventory() == shop)
             return;
 
-		AbstractNPC npc = null;
-		if (shop.getName().get().contains("'"))
-			npc = EconomyNPC.npcStorage.getNPC(shop.getName().get().substring(0, shop.getName().get().indexOf("'")));
-		else if (shop.getName().get().contains("-"))
-			return;
-		
-		if (npc == null)
+        AbstractNPC npc = null;
+        if (shop.getName().get().contains("'"))
+            npc = EconomyNPC.npcStorage.getNPC(shop.getName().get().substring(0, shop.getName().get().indexOf("'")));
+        else if (shop.getName().get().contains("-"))
             return;
-		
-		if (npc.getType() == NPCType.SHOP)
-		{
+
+        if (npc == null)
+            return;
+
+        if (npc.getType() == NPCType.SHOP)
+        {
             ItemType itemType = clicked.getItem();
             double price = EconomyNPC.prices.getBuyPrice(clicked);
             EconomyService econ = Utils.getEconomyService().get();
@@ -86,31 +86,31 @@ public class InventoryListener
                 player.closeInventory(cause);
                 player.sendMessage(Utils.goldText("You don't have enough funds."));
             }
-		}
+        }
     }
 
-	@Listener
-	public void onInventoryClose(InteractInventoryEvent.Close event)
-	{
-		OrderedInventory inv = (OrderedInventory) event.getTargetInventory();
-		Player player = event.getCause().first(Player.class).get();
-		AbstractNPC npc = null;
-		if (inv.getName().get().contains("'s Shop"))
-			npc = EconomyNPC.npcStorage.getNPC(inv.getName().get().substring(0, inv.getName().get().indexOf("'")));
-		else if (inv.getName().get().contains(" - Edit"))
-			npc = EconomyNPC.npcStorage.getNPC(inv.getName().get().substring(0, inv.getName().get().indexOf(" ")));
-		
-		if (npc == null)
+    @Listener
+    public void onInventoryClose(InteractInventoryEvent.Close event)
+    {
+        OrderedInventory inv = (OrderedInventory) event.getTargetInventory();
+        Player player = event.getCause().first(Player.class).get();
+        AbstractNPC npc = null;
+        if (inv.getName().get().contains("'s Shop"))
+            npc = EconomyNPC.npcStorage.getNPC(inv.getName().get().substring(0, inv.getName().get().indexOf("'")));
+        else if (inv.getName().get().contains(" - Edit"))
+            npc = EconomyNPC.npcStorage.getNPC(inv.getName().get().substring(0, inv.getName().get().indexOf(" ")));
+
+        if (npc == null)
             return;
-		
-		if (npc.getType() == NPCType.SELL)
-		{
-			List<ItemStack> items = new ArrayList<>();
-			double sell = 0;
-			for (Inventory slot : inv)
-			{
+
+        if (npc.getType() == NPCType.SELL)
+        {
+            List<ItemStack> items = new ArrayList<>();
+            double sell = 0;
+            for (Inventory slot : inv)
+            {
                 Optional<ItemStack> itemStackOptional = slot.peek();
-				if (!itemStackOptional.isPresent())
+                if (!itemStackOptional.isPresent())
                     continue;
 
                 ItemStack item = itemStackOptional.get();
@@ -118,9 +118,9 @@ public class InventoryListener
                     sell += EconomyNPC.prices.getSellPrice(item);
                 else
                     items.add(item);
-			}
-			
-			EconomyService econ = Utils.getEconomyService().get();
+            }
+
+            EconomyService econ = Utils.getEconomyService().get();
             if (econ.getOrCreateAccount(player.getUniqueId()).get().deposit(econ.getDefaultCurrency(), new BigDecimal(sell), Cause.of(NamedCause.source(EconomyNPC.instance()))).getResult() != ResultType.SUCCESS)
             {
                 for (Inventory slot : inv)
@@ -134,20 +134,20 @@ public class InventoryListener
                 return;
             }
 
-			player.sendMessage(Text.join(Text.builder("You have sold items for a total amount of ").color(TextColors.AQUA).build(), Text.of("$" + sell)));
-			if (items.size() > 0)
-			{
-				player.sendMessage(Utils.darkRedText("Some items could not be sold. They have been returned back to you."));
-				for (ItemStack item : items)
-					dropItem(item, player.getLocation().getPosition(), player.getWorld());
-			}
-		}
-		else if ((npc.getType() == NPCType.EXCHANGE || npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT) && inv.getName().get().contains(" - Edit"))
-		{
-			((InventoryNPC) npc).updateInventory(inv);
-			player.sendMessage(Text.builder("Shop updated.").color(TextColors.GREEN).build());
-		}
-	}
+            player.sendMessage(Text.join(Text.builder("You have sold items for a total amount of ").color(TextColors.AQUA).build(), Text.of("$" + sell)));
+            if (items.size() > 0)
+            {
+                player.sendMessage(Utils.darkRedText("Some items could not be sold. They have been returned back to you."));
+                for (ItemStack item : items)
+                    dropItem(item, player.getLocation().getPosition(), player.getWorld());
+            }
+        }
+        else if ((npc.getType() == NPCType.EXCHANGE || npc.getType() == NPCType.SHOP || npc.getType() == NPCType.KIT) && inv.getName().get().contains(" - Edit"))
+        {
+            ((InventoryNPC) npc).updateInventory(inv);
+            player.sendMessage(Text.builder("Shop updated.").color(TextColors.GREEN).build());
+        }
+    }
 
     private void dropItem(ItemStack itemStack, Vector3d position, World world)
     {

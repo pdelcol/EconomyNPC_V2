@@ -19,14 +19,14 @@ import java.util.Arrays;
 
 public class NPCEdit extends AbstractCommand
 {
-	public NPCEdit()
-	{
-		super("edit", "Edit a shop or kit NPC's offerings.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("edit"), new CommandArgument("name", Syntax.REPLACE, Syntax.REPLACE)), 1, "npc.edit", true);
-	}
+    public NPCEdit()
+    {
+        super("edit", "Edit a shop or kit NPC's offerings.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("edit"), new CommandArgument("name", Syntax.REPLACE, Syntax.REPLACE)), 1, "npc.edit", true);
+    }
 
-	@Nonnull
-	@Override
-	public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
+    @Nonnull
+    @Override
+    public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
     {
         String[] args = splitArgs(arguments);
         if (!testPermission(source))
@@ -51,5 +51,5 @@ public class NPCEdit extends AbstractCommand
 
         player.openInventory(((InventoryNPC) npc).getInventoryEdit(), Cause.of(NamedCause.source(EconomyNPC.instance())));
         return CommandResult.success();
-	}
+    }
 }

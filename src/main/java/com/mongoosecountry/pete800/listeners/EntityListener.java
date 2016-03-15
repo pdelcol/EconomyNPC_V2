@@ -16,26 +16,26 @@ import java.util.stream.Collectors;
 
 public class EntityListener
 {
-	@Listener
-	public void onEntityDamage(DamageEntityEvent event)
-	{
-		if (event.getTargetEntity().getType() != EntityTypes.VILLAGER)
-			return;
-		
-		Entity villager = event.getTargetEntity();
-		for (AbstractNPC npc : EconomyNPC.npcStorage.getNPCs())
-		{
-			if (npc.getVillager().getUniqueId() == villager.getUniqueId())
-			{
-				event.setCancelled(true);
-				return;
-			}
-		}
-	}
-	
-	@Listener
-	public void onEntityTarget(AITaskEvent event)
-	{
+    @Listener
+    public void onEntityDamage(DamageEntityEvent event)
+    {
+        if (event.getTargetEntity().getType() != EntityTypes.VILLAGER)
+            return;
+
+        Entity villager = event.getTargetEntity();
+        for (AbstractNPC npc : EconomyNPC.npcStorage.getNPCs())
+        {
+            if (npc.getVillager().getUniqueId() == villager.getUniqueId())
+            {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @Listener
+    public void onEntityTarget(AITaskEvent event)
+    {
         if (event.getGoal().getType() != GoalTypes.TARGET)
             return;
 
@@ -43,11 +43,11 @@ public class EntityListener
             return;
 
         FindNearestAttackableTargetAITask task = (FindNearestAttackableTargetAITask) event.getTask();
-		if (task.getTargetClass() == Villager.class)
-			return;
+        if (task.getTargetClass() == Villager.class)
+            return;
 
         for (AbstractNPC npc : EconomyNPC.npcStorage.getNPCs())
-		{
+        {
             for (Living living : event.getTargetEntity().getWorld().getEntities().stream().filter(entity -> entity instanceof Living).map(entity -> (Living) entity).collect(Collectors.toList()))
             {
                 if (npc.getVillager() != null && living.getUniqueId() == npc.getVillager().getUniqueId())
@@ -56,6 +56,6 @@ public class EntityListener
                     return;
                 }
             }
-		}
-	}
+        }
+    }
 }

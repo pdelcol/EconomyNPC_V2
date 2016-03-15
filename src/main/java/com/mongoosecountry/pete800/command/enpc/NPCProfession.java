@@ -21,18 +21,18 @@ import java.util.stream.Collectors;
 
 public class NPCProfession extends AbstractCommand
 {
-	public NPCProfession()
-	{
-		super("profession", "Set the outfit of an NPC.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("profession"), new CommandArgument("name", Syntax.REQUIRED, Syntax.REPLACE), new CommandArgument("profession", Syntax.REPLACE, Syntax.REQUIRED)), 2, "npc.profession", false);
-	}
+    public NPCProfession()
+    {
+        super("profession", "Set the outfit of an NPC.", Arrays.asList(new CommandArgument("/enpc"), new CommandArgument("profession"), new CommandArgument("name", Syntax.REQUIRED, Syntax.REPLACE), new CommandArgument("profession", Syntax.REPLACE, Syntax.REQUIRED)), 2, "npc.profession", false);
+    }
 
-	@Nonnull
-	@Override
-	public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
-	{
+    @Nonnull
+    @Override
+    public CommandResult process(@Nonnull CommandSource source, @Nonnull String arguments)
+    {
         String[] args = splitArgs(arguments);
-		if (!testPermission(source))
-			return CommandResult.empty();
+        if (!testPermission(source))
+            return CommandResult.empty();
 
         if (!minArgsMet(source, args.length))
             return CommandResult.empty();
@@ -56,5 +56,5 @@ public class NPCProfession extends AbstractCommand
         npc.setCareer(profession);
         source.sendMessage(Text.builder("Profession set.").color(TextColors.GREEN).build());
         return CommandResult.success();
-	}
+    }
 }
