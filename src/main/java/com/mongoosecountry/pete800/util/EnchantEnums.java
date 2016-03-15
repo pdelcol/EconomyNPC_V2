@@ -31,8 +31,8 @@ public enum EnchantEnums
     THORNS(Enchantments.THORNS, 1),
     UNBREAKING(Enchantments.UNBREAKING, 5);
 
-    Enchantment enchant;
-    int weight;
+    final Enchantment enchant;
+    final int weight;
 
     EnchantEnums(Enchantment enchant, int weight)
     {

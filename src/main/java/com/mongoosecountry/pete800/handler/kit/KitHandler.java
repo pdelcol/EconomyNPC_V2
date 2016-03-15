@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class KitHandler
 {
-    List<UUID> players = new ArrayList<UUID>();
+    private final List<UUID> players = new ArrayList<>();
 
     public void newTransaction(UUID player)
     {

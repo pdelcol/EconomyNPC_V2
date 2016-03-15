@@ -32,8 +32,8 @@ import java.util.UUID;
 
 public class KitNPC extends InventoryNPC
 {
-    KitHandler kitHandler = new KitHandler();
-    List<String> kitMessage;
+    private final KitHandler kitHandler = new KitHandler();
+    private List<String> kitMessage;
 
     public KitNPC(Location<World> location, String name)
     {
@@ -54,6 +54,7 @@ public class KitNPC extends InventoryNPC
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public List<String> getKitMessage()
     {
         return kitMessage;

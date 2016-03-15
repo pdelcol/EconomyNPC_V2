@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class Prices
 {
-    Map<ItemStack, Double> prices = new HashMap<>();
+    private final Map<ItemStack, Double> prices = new HashMap<>();
 
     public Prices(File configDir)
     {

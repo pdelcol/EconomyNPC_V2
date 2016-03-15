@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class ExchangeHandler
 {
-    List<UUID> players = new ArrayList<>();
+    private final List<UUID> players = new ArrayList<>();
 
     public void newTransaction(UUID player)
     {

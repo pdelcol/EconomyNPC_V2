@@ -17,8 +17,8 @@ import java.util.UUID;
 
 public class TokenHandler
 {
-    ConfigurationLoader<CommentedConfigurationNode> loader;
-    public Map<UUID, Integer> tokens = new HashMap<>();
+    private ConfigurationLoader<CommentedConfigurationNode> loader;
+    private final Map<UUID, Integer> tokens = new HashMap<>();
 
     //Load the tokens
     public void load(File dir)

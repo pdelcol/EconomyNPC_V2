@@ -10,6 +10,7 @@ import org.spongepowered.api.command.CommandSource;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
+@SuppressWarnings("WeakerAccess")
 public class NPCRemove extends AbstractCommand
 {
     public NPCRemove()

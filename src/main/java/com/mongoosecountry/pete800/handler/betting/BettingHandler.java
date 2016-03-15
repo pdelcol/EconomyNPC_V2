@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.UUID;
 
+@SuppressWarnings("all")
 public class BettingHandler
 {
     UUID player, challanger;

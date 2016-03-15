@@ -33,10 +33,10 @@ import java.util.UUID;
 
 public class BlacksmithNPC extends AbstractNPC
 {
-    BlacksmithHandler blacksmithHandler = new BlacksmithHandler();
-    Map<Double, Integer> expLevels = new HashMap<>();
-    Map<ItemType, ItemType> repairables = new HashMap<>();
-    Map<ItemType, Integer> maxDurabilities = new HashMap<>();
+    private final BlacksmithHandler blacksmithHandler = new BlacksmithHandler();
+    private final Map<Double, Integer> expLevels = new HashMap<>();
+    private final Map<ItemType, ItemType> repairables = new HashMap<>();
+    private final Map<ItemType, Integer> maxDurabilities = new HashMap<>();
 
     public BlacksmithNPC(Location<World> location, String name)
     {

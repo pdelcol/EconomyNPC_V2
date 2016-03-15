@@ -28,7 +28,7 @@ import java.util.UUID;
 
 public class ExchangeNPC extends InventoryNPC
 {
-    ExchangeHandler exchangeHandler = new ExchangeHandler();
+    private final ExchangeHandler exchangeHandler = new ExchangeHandler();
 
     public ExchangeNPC(Location<World> location, String name)
     {

@@ -11,6 +11,7 @@ import com.mongoosecountry.pete800.util.uuid.UUIDUtils.MinecraftProfile;
 import java.lang.reflect.Type;
 import java.util.UUID;
 
+@SuppressWarnings("WeakerAccess")
 public class MinecraftProfileTypeAdapter implements JsonDeserializer<MinecraftProfile>, JsonSerializer<MinecraftProfile>
 {
     @Override

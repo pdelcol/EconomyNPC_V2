@@ -22,14 +22,16 @@ import java.util.Optional;
 
 public abstract class InventoryNPC extends AbstractNPC
 {
-    ConfigurationNode inv;
+    private ConfigurationNode inv;
 
+    @SuppressWarnings("WeakerAccess")
     public InventoryNPC(Location<World> location, NPCType type, String name)
     {
         super(location, type, name);
         this.inv = SimpleConfigurationNode.root();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public InventoryNPC(String name, ConfigurationNode cn)
     {
         super(name, cn);

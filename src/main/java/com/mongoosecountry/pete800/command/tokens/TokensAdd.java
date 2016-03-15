@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
+@SuppressWarnings("WeakerAccess")
 public class TokensAdd extends AbstractCommand
 {
     public TokensAdd()

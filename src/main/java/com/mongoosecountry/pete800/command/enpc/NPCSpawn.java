@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings("WeakerAccess")
 public class NPCSpawn extends AbstractCommand
 {
     public NPCSpawn()
@@ -38,8 +39,8 @@ public class NPCSpawn extends AbstractCommand
         if (type == null)
         {
             List<String> names = new ArrayList<>();
-            for (NPCType npct : NPCType.values())
-                names.add(npct.toString());
+            for (NPCType npcType : NPCType.values())
+                names.add(npcType.toString());
 
             StringBuilder sb = new StringBuilder();
             for (String name : names)

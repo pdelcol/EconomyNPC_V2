@@ -14,6 +14,7 @@ import java.util.Collections;
 /**
  * Incomplete
  */
+@SuppressWarnings("all")
 @Deprecated
 public class WagerCommand extends AbstractCommand
 {

@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public class KitTask implements Runnable
 {
-    KitHandler handler;
-    UUID player;
+    private final KitHandler handler;
+    private final UUID player;
 
     public KitTask(KitHandler handler, UUID player)
     {

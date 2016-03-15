@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Arrays;
 
+@SuppressWarnings("WeakerAccess")
 public class NPCLoad extends AbstractCommand
 {
     public NPCLoad()

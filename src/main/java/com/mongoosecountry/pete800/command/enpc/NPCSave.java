@@ -11,6 +11,7 @@ import org.spongepowered.api.text.format.TextColors;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
+@SuppressWarnings("WeakerAccess")
 public class NPCSave extends AbstractCommand
 {
     public NPCSave()

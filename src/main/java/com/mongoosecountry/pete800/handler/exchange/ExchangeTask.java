@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public class ExchangeTask implements Runnable
 {
-    ExchangeHandler handler;
-    UUID player;
+    private final ExchangeHandler handler;
+    private final UUID player;
 
     public ExchangeTask(ExchangeHandler handler, UUID player)
     {

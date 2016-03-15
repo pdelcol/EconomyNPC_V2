@@ -22,12 +22,12 @@ public abstract class AbstractCommand implements CommandCallable
     private final Text description;
     private final Text usage;
 
-    public AbstractCommand(String name, String description, List<CommandArgument> arguments, int minArgs, String permission, boolean isPlayerOnly)
+    protected AbstractCommand(String name, String description, List<CommandArgument> arguments, int minArgs, String permission, boolean isPlayerOnly)
     {
         this(name, description, arguments, minArgs, permission, isPlayerOnly, new ArrayList<>());
     }
 
-    public AbstractCommand(String name, String description, List<CommandArgument> arguments, int minArgs, String permission, boolean isPlayerOnly, List<AbstractCommand> subCommands)
+    protected AbstractCommand(String name, String description, List<CommandArgument> arguments, int minArgs, String permission, boolean isPlayerOnly, List<AbstractCommand> subCommands)
     {
         this.name = name;
         this.description = Text.of(description);
@@ -101,16 +101,19 @@ public abstract class AbstractCommand implements CommandCallable
         return usage;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public int getMinArgs()
     {
         return minArgs;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public List<AbstractCommand> getSubCommands()
     {
         return subCommands;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public String getName()
     {
         return name;

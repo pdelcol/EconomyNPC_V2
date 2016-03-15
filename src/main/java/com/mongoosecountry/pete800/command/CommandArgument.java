@@ -8,8 +8,8 @@ import java.util.List;
 
 public class CommandArgument
 {
-    List<Syntax> syntaxList;
-    String name;
+    private final List<Syntax> syntaxList;
+    private final String name;
 
     public CommandArgument(String name)
     {

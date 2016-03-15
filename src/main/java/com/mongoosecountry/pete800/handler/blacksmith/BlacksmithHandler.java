@@ -11,8 +11,8 @@ import java.util.UUID;
 
 public class BlacksmithHandler
 {
-    Map<UUID, Double> costMap = new HashMap<>();
-    Map<UUID, ItemStack> itemMap = new HashMap<>();
+    private final Map<UUID, Double> costMap = new HashMap<>();
+    private final Map<UUID, ItemStack> itemMap = new HashMap<>();
 
     public void newTransaction(double cost, UUID player, ItemStack item)
     {

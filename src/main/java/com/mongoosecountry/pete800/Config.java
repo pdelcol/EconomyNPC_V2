@@ -16,11 +16,10 @@ import java.net.URLConnection;
 
 public class Config
 {
-    double sellBackPercentage = 0.75;
-    double tokenForMoney = 2000;
-    File configDir;
-    int tokenForExp = 200;
-    String CONFIG_CREATE_FAILED = "Failed to create config.conf";
+    private double sellBackPercentage = 0.75;
+    private double tokenForMoney = 2000;
+    private final File configDir;
+    private int tokenForExp = 200;
 
     public Config(File dir)
     {
@@ -28,6 +27,7 @@ public class Config
         reload();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void reload()
     {
         File configFile = new File(configDir, "config.conf");
@@ -37,6 +37,7 @@ public class Config
             if (!configFile.mkdirs())
                 logger.error("Failed to create config directory. It may already exist.");
 
+            String CONFIG_CREATE_FAILED = "Failed to create config.conf";
             try
             {
                 if (!configFile.createNewFile())

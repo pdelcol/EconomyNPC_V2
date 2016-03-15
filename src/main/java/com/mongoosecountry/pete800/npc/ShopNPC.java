@@ -4,6 +4,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+@SuppressWarnings("WeakerAccess")
 public class ShopNPC extends InventoryNPC
 {
     public ShopNPC(Location<World> location, String name)

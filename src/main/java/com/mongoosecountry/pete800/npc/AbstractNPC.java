@@ -20,12 +20,13 @@ import org.spongepowered.api.world.World;
 
 public abstract class AbstractNPC
 {
-    Career career;
-    Location<World> location;
-    NPCType type;
-    String name;
-    Villager villager;
+    private Career career;
+    private Location<World> location;
+    final NPCType type;
+    final String name;
+    private Villager villager;
 
+    @SuppressWarnings("WeakerAccess")
     public AbstractNPC(Location<World> location, NPCType type, String name)
     {
         this.location = location;
@@ -36,6 +37,7 @@ public abstract class AbstractNPC
             respawnNPC();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public AbstractNPC(String name, ConfigurationNode cn)
     {
         this.type = NPCType.fromName(cn.getString());
@@ -128,7 +130,7 @@ public abstract class AbstractNPC
         return cn;
     }
 
-    public static enum NPCType
+    public enum NPCType
     {
         // Gambling NPC
         BETTING,

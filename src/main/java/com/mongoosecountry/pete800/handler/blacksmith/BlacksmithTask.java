@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public class BlacksmithTask implements Runnable
 {
-    BlacksmithHandler handler;
-    UUID player;
+    private final BlacksmithHandler handler;
+    private final UUID player;
 
     public BlacksmithTask(BlacksmithHandler handler, UUID player)
     {

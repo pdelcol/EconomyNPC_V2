@@ -15,6 +15,7 @@ import org.spongepowered.api.text.format.TextColors;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
+@SuppressWarnings("WeakerAccess")
 public class NPCMove extends AbstractCommand
 {
     public NPCMove()

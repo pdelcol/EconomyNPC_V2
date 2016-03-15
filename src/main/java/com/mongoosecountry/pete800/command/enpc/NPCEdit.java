@@ -17,6 +17,7 @@ import org.spongepowered.api.event.cause.NamedCause;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
+@SuppressWarnings("WeakerAccess")
 public class NPCEdit extends AbstractCommand
 {
     public NPCEdit()

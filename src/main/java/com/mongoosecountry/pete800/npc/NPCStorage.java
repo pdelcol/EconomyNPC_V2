@@ -21,8 +21,8 @@ import java.util.List;
 
 public class NPCStorage
 {
-    ArrayList<AbstractNPC> npcs = new ArrayList<>();
-    private File npcFile;
+    private final ArrayList<AbstractNPC> npcs = new ArrayList<>();
+    private final File npcFile;
 
     public NPCStorage(File dir)
     {

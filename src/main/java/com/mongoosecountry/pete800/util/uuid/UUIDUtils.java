@@ -17,6 +17,7 @@ import java.util.UUID;
 
 public class UUIDUtils
 {
+    @SuppressWarnings("WeakerAccess")
     public static Map<String, UUID> getUUIDs(List<String> names) throws IOException
     {
         Map<String, UUID> map = new HashMap<>();
@@ -46,6 +47,7 @@ public class UUIDUtils
         return getUUIDs(Collections.singletonList(name)).get(name.toLowerCase());
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static Map<UUID, String> getNames(List<UUID> uuids) throws IOException
     {
         Map<UUID, String> map = new HashMap<>();
